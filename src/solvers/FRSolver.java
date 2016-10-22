@@ -1,0 +1,127 @@
+package solvers;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import states.FRState;
+import states.State;
+import utilities.DiscreteHelpers;
+import utilities.Parameter;
+
+public class FRSolver extends Solver {
+	
+	public FRSolver(Parameter param_) {
+		param = param_;
+		NumOfStates = param.getRrange().length * param.getGrange().length * param.getDrange().length;
+		ArrayOfStates = new FRState[NumOfStates];
+	}
+
+	/**
+	 * Computes V(S_t) = max_{x_t} C(S_t, x_t) + E [ V_{t+1} (S_{t+1}) | S_t] and X(S_t)
+	 * 
+	 * @param state:
+	 *            state S_t
+	 * @param t:
+	 *            time index
+	 */
+
+	public void findMax(State state, int t) {
+		float max = Float.NEGATIVE_INFINITY;
+		int maxIndex = -1;
+		for (int i = 0; i < state.getFeasibleActions().size(); i++) {
+			float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
+			if (cost > max) {
+				max = cost;
+				maxIndex = i;
+			} else if (cost == max) {
+				// Tie-breaker, choose the decision with the smallest magnitude
+				if (state.getTieBreak(i, maxIndex)) {
+					maxIndex = i;
+				}
+			}
+		}
+		state.setValueFunction(max, t);
+		state.setOptAction(maxIndex, t);
+	}
+
+	/**
+	 * Computes the expected downstream value given S_t, E [ V_{t+1} (S_{t+1}) | S_t, x_t]
+	 * 
+	 * @param state
+	 * @param actionIndex
+	 *            the actionIndex-th feasible action for the state
+	 * @param t
+	 *            time index
+	 * @return E [ V_{t+1} (S_{t+1}) | S_t, x_t]
+	 */
+
+	public float findNextStateExpectValue(State state, int actionIndex, int t) {
+		int Rnext = ((FRState) state).getRnext(actionIndex);
+		int Gnext = ((FRState) state).getGnext(actionIndex);
+		int[] Dnext = ((FRState) state).getDnext();
+		float[] ProbNext = ((FRState) state).getNextProb();
+		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length)
+				+ Gnext * param.getDrange().length;
+		float sum = 0;
+		for (int j = 0; j < Dnext.length; j++) {
+			float Vnext = ArrayOfStates[baseIndex + Dnext[j]].getValueFunction(t + 1);
+			sum += ProbNext[j] * Vnext;
+		}
+		return sum;
+	}
+
+	public void populateStates(float[][] terminal_value_function) {
+		System.out.println("================================");
+		System.out.println("FREQ REGULATION SOLVER");
+		Date now = new Date();
+		SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss");
+		System.out.println("BEGIN INIT: " + ft.format(now));
+		float[][] Truterminal_value_function = new float[param.getRrange().length][param.getGrange().length];
+		if (terminal_value_function != null) {
+			// Check Dimension First
+			if (terminal_value_function.length != param.getRrange().length
+					|| terminal_value_function[0].length != param.getGrange().length)
+				Truterminal_value_function = DiscreteHelpers.interpolate(terminal_value_function,
+						param.getRrange().length, param.getGrange().length);
+		}
+
+		int s = 0;
+		if (terminal_value_function == null) {
+			for (int r = 0; r < param.getRrange().length; r++) {
+				for (int d = 0; d < param.getDrange().length; d++) {
+					for (int g = 0; g < param.getGrange().length; g++) {
+						FRState newState = new FRState(param, r, g, d);
+						newState.setValueFunction(param.getK() * param.getPD() * param.getGrange()[g]
+								* (param.getGrange()[g] >= 0.4 ? 1 : 0), Parameter.NoTwoSecPerFiveMin);
+						ArrayOfStates[s] = newState;
+						s++;
+					}
+				}
+			}
+		} else {
+			for (int r = 0; r < param.getRrange().length; r++) {
+				for (int d = 0; d < param.getDrange().length; d++) {
+					for (int g = 0; g < param.getGrange().length; g++) {
+						FRState newState = new FRState(param, r, g, d);
+						newState.setValueFunction(Truterminal_value_function[r][g], Parameter.NoTwoSecPerFiveMin);
+						ArrayOfStates[s] = newState;
+						s++;
+					}
+				}
+			}
+		}
+		now = new Date();
+		System.out.println("FINISH INIT: " + ft.format(now));
+		System.out.println("================================");
+		System.out.println("State size/Time: " + NumOfStates);
+		System.out.println("================================");
+
+	}
+
+	public void initializeStates() {
+		for (int s = 0; s < NumOfStates; s++) {
+			ArrayOfStates[s].initialize(param);
+		}
+	}
+
+}
