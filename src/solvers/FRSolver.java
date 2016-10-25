@@ -9,39 +9,11 @@ import utilities.DiscreteHelpers;
 import utilities.Parameter;
 
 public class FRSolver extends Solver {
-	
+
 	public FRSolver(Parameter param_) {
 		param = param_;
 		NumOfStates = param.getRrange().length * param.getGrange().length * param.getDrange().length;
 		ArrayOfStates = new FRState[NumOfStates];
-	}
-
-	/**
-	 * Computes V(S_t) = max_{x_t} C(S_t, x_t) + E [ V_{t+1} (S_{t+1}) | S_t] and X(S_t)
-	 * 
-	 * @param state:
-	 *            state S_t
-	 * @param t:
-	 *            time index
-	 */
-
-	public void findMax(State state, int t) {
-		float max = Float.NEGATIVE_INFINITY;
-		int maxIndex = -1;
-		for (int i = 0; i < state.getFeasibleActions().size(); i++) {
-			float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
-			if (cost > max) {
-				max = cost;
-				maxIndex = i;
-			} else if (cost == max) {
-				// Tie-breaker, choose the decision with the smallest magnitude
-				if (state.getTieBreak(i, maxIndex)) {
-					maxIndex = i;
-				}
-			}
-		}
-		state.setValueFunction(max, t);
-		state.setOptAction(maxIndex, t);
 	}
 
 	/**
@@ -60,11 +32,10 @@ public class FRSolver extends Solver {
 		int Gnext = ((FRState) state).getGnext(actionIndex);
 		int[] Dnext = ((FRState) state).getDnext();
 		float[] ProbNext = ((FRState) state).getNextProb();
-		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length)
-				+ Gnext * param.getDrange().length;
+		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length) + Gnext;
 		float sum = 0;
 		for (int j = 0; j < Dnext.length; j++) {
-			float Vnext = ArrayOfStates[baseIndex + Dnext[j]].getValueFunction(t + 1);
+			float Vnext = ArrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
 			sum += ProbNext[j] * Vnext;
 		}
 		return sum;

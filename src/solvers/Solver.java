@@ -3,7 +3,7 @@ package solvers;
 import states.State;
 import utilities.Parameter;
 
-public abstract class Solver implements Solve_Sim_Interface {
+public abstract class Solver {
 	protected Parameter param;
 	protected State[] ArrayOfStates;
 	protected int NumOfStates;
@@ -22,14 +22,40 @@ public abstract class Solver implements Solve_Sim_Interface {
 				findMax(ArrayOfStates[s], t);
 			}
 			long end = System.currentTimeMillis();
-			System.out.println("STEP: " + t + " elpased: " + (end - start) / 1000 + "s");
+			System.out.println("STEP: " + t + " elpased: " + (end - start) + "ms");
 			start = end;
 		}
 	}
 
-	// public abstract void findMax(State s, int t);
+	/**
+	 * Computes V(S_t) = max_{x_t} C(S_t, x_t) + E [ V_{t+1} (S_{t+1}) | S_t] and X(S_t)
+	 * 
+	 * @param state:
+	 *            state S_t
+	 * @param t:
+	 *            time index
+	 */
 
-	// public abstract float findNextStateExpectValue(State s, int actionIndex, int t);
+	public void findMax(State state, int t) {
+		float max = Float.NEGATIVE_INFINITY;
+		int maxIndex = -1;
+		for (int i = 0; i < state.getFeasibleActions().size(); i++) {
+			float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
+			if (cost > max) {
+				max = cost;
+				maxIndex = i;
+			} else if (cost == max) {
+				// Tie-breaker, choose the decision with the smallest magnitude
+				if (state.getTieBreak(i, maxIndex)) {
+					maxIndex = i;
+				}
+			}
+		}
+		state.setValueFunction(max, t);
+		state.setOptAction(maxIndex, t);
+	}
+
+	public abstract float findNextStateExpectValue(State s, int actionIndex, int t);
 
 	public void populateStates() {
 		populateStates(null);

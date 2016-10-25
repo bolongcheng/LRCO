@@ -26,7 +26,6 @@ public class FRState extends State {
 	private int[] Gnext;
 	private int[] Dnext;
 	private float[] NextProb;
-	private float[] CurrCost;
 
 	private static float epislon = (float) 0.0001;
 
@@ -207,10 +206,6 @@ public class FRState extends State {
 	public boolean getTieBreak(int i, int maxIndex) {
 		return (Math.abs(action_space[getFeasibleActions().get(i)] + action_space[D]) < Math
 				.abs(action_space[getFeasibleActions().get(maxIndex)] + action_space[D]));
-	}
-
-	public float getCurrCost(int action_index) {
-		return CurrCost[action_index];
 	}
 
 }

@@ -66,10 +66,7 @@ public class FRSolver_sparseLR extends FRSolver {
 			for (int i = 0; i < sampled_states.length; i++) {
 				int r = (int) sampled_states[i][0];
 				int g_d_idx = (int) sampled_states[i][1];
-				// convert from one dimension to two dimensions to get g and d
-//				int g = (int) g_d_idx % param.getGrange().length;
-//				int d = (int) g_d_idx / param.getGrange().length;
-				sampStates[i] = (FRState) ArrayOfStates[r * RD_length + (int) g_d_idx];
+				sampStates[i] = (FRState) ArrayOfStates[r * RD_length + g_d_idx];
 				sampStates[i].initialize(param);
 			}
 		} catch (MatlabInvocationException e) {
@@ -90,21 +87,14 @@ public class FRSolver_sparseLR extends FRSolver {
 	}
 
 	public void solveBDP() {
-		SimpleDateFormat ft = new SimpleDateFormat("MM/dd hh:mm:ss");
+		long start = System.currentTimeMillis();
 		for (int t = Parameter.NoTwoSecPerFiveMin - 1; t >= 0; t--) {
 			VF_approx[t] = new VFApprox(param);
-			if (t % (Parameter.NoTwoSecPerFiveMin / 5) == 0) {
-				Date now = new Date();
-				System.out.println("MINUTE: " + (t / (Parameter.NoTwoSecPerFiveMin / 5)) + " STAMP: " + ft.format(now));
-			}
 			for (int i = 0; i < sampStates.length; i++) {
 				FindMax(sampStates[i], t, i);
 			}
 			try {
 				processor.setNumericArray("sample_VF", new MatlabNumericArray(sample_VF, null));
-				// processor.setNumericArray("sampled_states", new
-				// MatlabNumericArray(sampled_states, null));
-				// string input to call svd_approx_partition.m
 				String vf_approx_input = "svd_approx_partitionLS(sample_VF," + param.get_row_part() + ","
 						+ param.get_col_part() + "," + t + ");";
 
@@ -120,6 +110,9 @@ public class FRSolver_sparseLR extends FRSolver {
 				System.out.println("Error: svd_approx_partition.m");
 				e.printStackTrace();
 			}
+			long now = System.currentTimeMillis();
+			System.out.println("Step: " + t + " elspased:" + (now - start) + "ms");
+			start = now;
 		}
 	}
 
@@ -166,12 +159,11 @@ public class FRSolver_sparseLR extends FRSolver {
 		int[] Dnext = ((FRState) state).getDnext();
 		float[] ProbNext = ((FRState) state).getNextProb();
 		float sum = 0;
-		int baseIndex = (Rnext - 1) * (param.getDrange().length * param.getGrange().length)
-				+ (Gnext - 1) * param.getDrange().length;
+		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length) + Gnext;
 		for (int j = 0; j < Dnext.length; j++) {
 			float Vnext = (float) VF_approx[t + 1].get_V_approx(Rnext, Gnext, Dnext[j]);
 			if (t + 1 == Parameter.NoTwoSecPerFiveMin)
-				Vnext = ArrayOfStates[baseIndex + Dnext[j]].getValueFunction(t + 1);
+				Vnext = ArrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
 			sum += ProbNext[j] * Vnext;
 		}
 		return sum;

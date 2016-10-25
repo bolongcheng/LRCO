@@ -8,6 +8,7 @@ public abstract class State {
 	protected int[] OptAction;
 	protected float[] V;
 	protected List<Integer> feasibleActions;
+	protected float[] CurrCost;
 
 	public void setValueFunction(float v, int t) {
 		V[t] = v;
@@ -33,7 +34,9 @@ public abstract class State {
 
 	public abstract boolean getTieBreak(int action_index, int maxIndex);
 
-	public abstract float getCurrCost(int action_index);
+	public float getCurrCost(int action_index) {
+		return CurrCost[action_index];
+	}
 
 	public abstract void initialize(Parameter param);
 
