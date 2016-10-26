@@ -35,7 +35,7 @@ public class FRSolver_sparseLR extends FRSolver {
 
 	public FRSolver_sparseLR(Parameter param_) {
 		super(param_);
-		VF_approx = new VFApprox[Parameter.NoTwoSecPerFiveMin + 1];
+		VF_approx = new VFApprox[Parameter.NoTwoSecPerFiveMin];
 	}
 
 	public void initializeStates() {
@@ -75,7 +75,7 @@ public class FRSolver_sparseLR extends FRSolver {
 		}
 		System.out.println("Sample size: " + sampled_states.length);
 		sample_VF = new double[sampled_states.length][1];
-		VF_approx[Parameter.NoTwoSecPerFiveMin] = new VFApprox(param);
+//		VF_approx[Parameter.NoTwoSecPerFiveMin] = new VFApprox(param);
 	}
 
 	public void closeMatlab() {
@@ -168,7 +168,14 @@ public class FRSolver_sparseLR extends FRSolver {
 		}
 		return sum;
 	}
-
+	
+	/**
+	 *  TODO: should this be kept here?
+	 * @param x_in
+	 * @param y_in
+	 * @param shift_in
+	 */
+	
 	public void setVFApprox(float[][] x_in, float[][] y_in, float[][] shift_in) {
 		for (int i = 0; i < Parameter.NoTwoSecPerFiveMin; i++) {
 			VF_approx[i] = new VFApprox(param);
@@ -214,6 +221,37 @@ public class FRSolver_sparseLR extends FRSolver {
 		CSVIO.Write2DArray(xfile, getVFSVD(FRSolver_sparseLR.x_svd));
 		CSVIO.Write2DArray(yfile, getVFSVD(FRSolver_sparseLR.y_svd));
 		CSVIO.Write2DArray(shiftfile, getVFSVD(FRSolver_sparseLR.shift_mat));
+	}
+	
+	/**
+	 * TODO: needs to be changed
+	 */
+
+	public float[][] getValueFunction(int choice, int horizon) {
+		float[][] output = new float[horizon][NumOfStates];
+		int s = 0;
+		switch (choice) {
+		case ValueFunction:
+			for (int r = 0; r < param.getRrange().length; r++) {
+				for (int d = 0; d < param.getDrange().length; d++) {
+					for (int g = 0; g < param.getGrange().length; g++) {
+						for (int t = 0; t < horizon; t++) {
+							output[t][s] = (float) VF_approx[t].get_V_approx(r, g, d);
+							s++;
+						}
+					}
+				}
+			}
+			break;
+		case OptiAction:
+//			for (int s = 0; s < NumOfStates; s++) {
+//				for (int t = 0; t < horizon; t++) {
+//					output[t][s] = ArrayOfStates[s].getOptAction(t);
+//				}
+//			}
+			break;
+		}
+		return output;
 	}
 
 }

@@ -4,6 +4,7 @@ import java.io.File;
 
 import simulators.FRSimulator;
 import solvers.FRSolver;
+import solvers.FRSolver_sparseLR;
 import solvers.Solver;
 import utilities.CSVIO;
 import utilities.FastIO;
@@ -12,42 +13,48 @@ import utilities.Parameter;
 public class Test {
 	public static void main(String[] args) {
 		// String dirName = "";
-		String dirName = "/Users/mac/Dropbox/JavaWorkspace/PJM_RegD";
+		String dirName = "/Users/mac/Dropbox/JavaWorkspace/LRCO";
 		if (args.length != 0)
 			dirName = args[0];
 		int numTest = 0;
 		if (args.length > 1)
 			numTest = Integer.parseInt(args[1]);
 
-		Parameter param = new Parameter(
-				dirName + File.separator + "Input" + File.separator + "test" + numTest + ".csv");
+		Parameter param = new Parameter();
+		param.readStaticParameters(dirName + File.separator + "Input" + File.separator + "static_param.csv");
+		param.readStateSpace(dirName + File.separator + "Input" + File.separator + "fr_test" + numTest + ".csv");
+		
 		float[][] dt_trans_prob = CSVIO.Read2DArray(
 				dirName + File.separator + "Input" + File.separator + "dt_trans_prob.csv", param.getDrange().length,
 				param.getDrange().length);
-		param.LoadDnext(dt_trans_prob);
-		FRSolver solve = new FRSolver(param);
+		param.setDnext(dt_trans_prob);
+		FRSolver solve = new FRSolver_sparseLR(param);
 		solve.populateStates();
 		solve.initializeStates();
 		solve.solveBDP();
-		float[][] VF = solve.getValueFunction(Solver.ValueFunction, Parameter.NoTwoSecPerFiveMin + 1);
-		long start = System.currentTimeMillis();
-		CSVIO.Write2DArray(dirName + File.separator + "Output" + File.separator + "VF.csv", VF);
-		long middle = System.currentTimeMillis();
-		FastIO.Write2DFloatArray(dirName + File.separator + "Output" + File.separator + "VF.dat", VF);
-		long done = System.currentTimeMillis();
-		System.out.println("write normal time: " + (middle - start));
-		System.out.println("write faster time: " + (done - middle));
+		((FRSolver_sparseLR)solve).closeMatlab();
+		
+//		float[][] VF = solve.getValueFunction(Solver.ValueFunction, Parameter.NoTwoSecPerFiveMin + 1);
+//		long start = System.currentTimeMillis();
+//		CSVIO.Write2DArray(dirName + File.separator + "Output" + File.separator + "VF.csv", VF);
+//		long middle = System.currentTimeMillis();
+//		FastIO.Write2DFloatArray(dirName + File.separator + "Output" + File.separator + "VF.dat", VF);
+//		long done = System.currentTimeMillis();
+//		System.out.println("write normal time: " + (middle - start));
+//		System.out.println("write faster time: " + (done - middle));
+		
+		
 
-		start = System.currentTimeMillis();
-		VF = CSVIO.Read2DArray(dirName + File.separator + "Output" + File.separator + "VF.csv",
-				Parameter.NoTwoSecPerFiveMin + 1, solve.getNumOfStates());
-		middle = System.currentTimeMillis();
-		float[][] VF2 = FastIO.Read2DFloatArray(dirName + File.separator + "Output" + File.separator + "VF.dat",
-				Parameter.NoTwoSecPerFiveMin + 1, solve.getNumOfStates());
-		done = System.currentTimeMillis();
-		System.out.println("read normal time: " + (middle - start));
-		System.out.println("read faster time: " + (done - middle));
-		System.out.println("diff " + isSame(VF, VF2));
+//		start = System.currentTimeMillis();
+//		VF = CSVIO.Read2DArray(dirName + File.separator + "Output" + File.separator + "VF.csv",
+//				Parameter.NoTwoSecPerFiveMin + 1, solve.getNumOfStates());
+//		middle = System.currentTimeMillis();
+//		float[][] VF2 = FastIO.Read2DFloatArray(dirName + File.separator + "Output" + File.separator + "VF.dat",
+//				Parameter.NoTwoSecPerFiveMin + 1, solve.getNumOfStates());
+//		done = System.currentTimeMillis();
+//		System.out.println("read normal time: " + (middle - start));
+//		System.out.println("read faster time: " + (done - middle));
+//		System.out.println("diff " + isSame(VF, VF2));
 
 		// int num_trial = 10;
 		// int[][] dt = CSVIO.read2DArray(dirName + File.separator + "RegDInput" + File.separator +

@@ -9,12 +9,11 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 /**
- * The Parameter class handles the input parameters. The input csv file is
- * formatted in the following order:
+ * The Parameter class handles the input parameters. The input csv file is formatted in the
+ * following order:
  * 
- * Delta t, K, R_max, beta^c, beta^d, L^u, L^l, eta^c, eta^d R_size,
- * G_size, D_size, P^E_size R_max, G_min, D_max, P^E_max R_min, G_max, D_min,
- * P^E_min P^E, P^D, x^G, X^E
+ * Delta t, K, R_max, beta^c, beta^d, L^u, L^l, eta^c, eta^d R_size, G_size, D_size, P^E_size R_max,
+ * G_min, D_max, P^E_max R_min, G_max, D_min, P^E_min P^E, P^D, x^G, X^E
  * 
  * @author bcheng
  * @date 10/26
@@ -24,35 +23,31 @@ public class Parameter {
 	// public static final int NoTwoSecPerMin = 150;
 	public static final int NoTwoSecPerFiveMin = 30; // Ten Second
 	public static final int NoFiveMinPerHr = 12;
-	public static final int RC = 0; // Energy capacity in MWh
-	public static final int betac = 1; // charging capacity
-	public static final int betad = 2; // discharging capacity
-	public static final int Lu = 3; // upper limit
-	public static final int Ll = 4; // lower limit
-	public static final int etac = 5; // charging efficiency
-	public static final int etad = 6; // discharging efficiency
+	public static final int betac = 0; // charging capacity
+	public static final int betad = 1; // discharging capacity
+	public static final int Lu = 2; // upper limit
+	public static final int Ll = 3; // lower limit
+	public static final int etac = 4; // charging efficiency
+	public static final int etad = 5; // discharging efficiency
 
-	public static final int Rtag = 0;
-	public static final int Gtag = 1;
-	public static final int Dtag = 2;
-	public static final int PEtag = 3;
-	public static final int PDtag = 4;
+	public static final int R_index = 0;
+	public static final int G_index = 1;
+	public static final int D_index = 2;
+	public static final int PE_index = 3;
+	public static final int PD_index = 4;
 
-	public static final int row_part = 6; // how many sub-matrices from top to
-											// bottom
+	public static final int row_part = 6; // how many sub-matrices from top to bottom
 	// 63 if we use |D| = 21;
-	public static final int col_part = 63; // how many sub-matrices from left to
-											// right
+	public static final int col_part = 63; // how many sub-matrices from left to right
 
 	private float[] BatteryParam; // stores the previous parameters
-	private int TStart; // Time horizon
 	private float K; // regulation capacity in MW during [0,T]
-	private int deltat;
+	private int delta_t;
 
 	private float PE;
 	private float PD;
-	private float Gfac;
-	private float EcoBase;
+	private float x_G;
+	private float x_E;
 
 	// pdstate_size is a n-dimensional vector of the state space discretization
 	// along each dimension. pdstate_min/pdstate_max are the lower and upper
@@ -60,125 +55,82 @@ public class Parameter {
 	// pdstate_max(i), pdstate_size(i)) is the state space along the i-th
 	// dimension. Each state is a vector in R^n
 	// Same for predecision states (default: post space = pre space)
-	private int[] prestate_size = null;
-	private float[] prestate_min = null;
-	private float[] prestate_max = null;
+	private int[] state_size = null;
+	private float[] state_min = null;
+	private float[] state_max = null;
 
 	private float[] Rrange;
 	private float[] Grange;
 	private float[] Drange;
 	private float[] PErange;
+	private float[] PDrange;
+	
 	private float[] XGrange;
 	private float[][] LMPdensity;
 	private float[][] PERTnextprob;
 	private float[][] RTPrice;
-
 	private float[][] fm_prob;
 	private float[][] price_prob;
 
-	private float[] PDrange;
 	private float[][] PDRTnextprob;
-
-	private List<int[]> RnextOffset;
-	private List<float[]> RnextProb;
-	private List<int[]> GnextOffset;
-	private List<float[]> GnextProb;
 
 	private List<int[]> Dnext;
 	private List<float[]> DnextProb;
-	
+
 	private Hashtable<String, int[][]> RGtransOffset;
 	private Hashtable<String, float[]> RGtransMat;
-	
-	public Parameter(String filename_) {
-		/* TODO: clean up i/o here */
+
+	public Parameter() {
+		BatteryParam = new float[etad + 1];
+		state_size = new int[PD_index+1];
+		state_min = new float[PD_index+1];
+		state_max = new float[PD_index+1];
+		PERTnextprob = new float[NoFiveMinPerHr][state_size[PE_index] + 1];
+		XGrange = new float[3];
+		for (int i = 0; i < XGrange.length; i++) {
+			XGrange[i] = (state_min[G_index] - state_max[G_index]) / (XGrange.length - 1) * i + state_max[G_index];
+			// System.out.println(XGrange[i]);
+		}
+	}
+
+	public void readStaticParameters(String filename) {
 		BufferedReader br = null;
 		String line = "";
-		String cvsSplitBy = ",";
+		String splitBy = "=";
 		try {
-			br = new BufferedReader(new FileReader(filename_));
-			if ((line = br.readLine()) != null) {
-				// use comma as separator
-				String[] input = line.split(cvsSplitBy);
-				TStart = Math.max(0, Math.min(Integer.parseInt(input[0]), 23));
-				deltat = Integer.parseInt(input[1]);
-				K = Float.parseFloat(input[2]);
-				BatteryParam = new float[input.length - 3];
-				for (int i = 3; i < input.length; i++) {
-					BatteryParam[i - 3] = Float.parseFloat(input[i]);
-				}
+			br = new BufferedReader(new FileReader(filename));
+			while ((line = br.readLine()) != null) {
+				String[] input = line.split(splitBy);
+				if (input[0].equalsIgnoreCase("deltat")) {
+					delta_t = Integer.parseInt(input[1]);
+				} else if (input[0].equalsIgnoreCase("K")) {
+					K = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("beta_c")) {
+					BatteryParam[betac] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("beta_d")) {
+					BatteryParam[betad] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("eta_c")) {
+					BatteryParam[etac] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("eta_d")) {
+					BatteryParam[etac] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("L_u")) {
+					BatteryParam[Lu] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("L_l")) {
+					BatteryParam[Ll] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("pe")) {
+					PE = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("pd")) {
+					PD = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("x_g")) {
+					x_G = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("x_e")) {
+					x_E = Float.parseFloat(input[1]);
+				} 
 			}
-
-			if ((line = br.readLine()) != null) {
-				String[] input = line.split(cvsSplitBy);
-				prestate_size = new int[input.length];
-				for (int i = 0; i < input.length; i++)
-					prestate_size[i] = Integer.parseInt(input[i]);
-			}
-
-			if ((line = br.readLine()) != null) {
-				String[] input = line.split(cvsSplitBy);
-				prestate_min = new float[input.length];
-				for (int i = 0; i < input.length; i++)
-					prestate_min[i] = Float.parseFloat(input[i]);
-			}
-
-			if ((line = br.readLine()) != null) {
-				String[] input = line.split(cvsSplitBy);
-				prestate_max = new float[input.length];
-				for (int i = 0; i < input.length; i++)
-					prestate_max[i] = Float.parseFloat(input[i]);
-			}
-
-			if ((line = br.readLine()) != null) {
-				// use comma as separator
-				String[] input = line.split(cvsSplitBy);
-				PE = Float.parseFloat(input[0]);
-				PD = Float.parseFloat(input[1]);
-				Gfac = Float.parseFloat(input[2]);
-				EcoBase = Float.parseFloat(input[3]);
-			}
-
-			Rrange = new float[prestate_size[Rtag] + 1];
-			Grange = new float[prestate_size[Gtag] + 1];
-			Drange = new float[prestate_size[Dtag] + 1];
-			PErange = new float[prestate_size[PEtag] + 1];
-			PDrange = new float[prestate_size[PDtag] + 1];
-
-			PERTnextprob = new float[NoFiveMinPerHr][prestate_size[PEtag] + 1];
-
-			float diff = (prestate_max[Rtag] - prestate_min[Rtag]) / prestate_size[Rtag];
-			for (int i = 0; i < Rrange.length; i++)
-				Rrange[i] = diff * i + prestate_min[Rtag];
-			diff = (prestate_max[Gtag] - prestate_min[Gtag]) / prestate_size[Gtag];
-			for (int i = 0; i < Grange.length; i++)
-				Grange[i] = diff * i + prestate_min[Gtag];
-			diff = (prestate_max[Dtag] - prestate_min[Dtag]) / prestate_size[Dtag];
-			for (int i = 0; i < Drange.length; i++)
-				Drange[i] = diff * i + prestate_min[Dtag];
-			diff = (prestate_max[PEtag] - prestate_min[PEtag]) / prestate_size[PEtag];
-			for (int i = 0; i < PErange.length; i++)
-				PErange[i] = diff * i + prestate_min[PEtag];
-			diff = (prestate_max[PDtag] - prestate_min[PDtag]) / prestate_size[PDtag];
-			for (int i = 0; i < PDrange.length; i++)
-				PDrange[i] = diff * i + prestate_min[PDtag];
-
-			// FIXME: This is hardcoded!!
-			XGrange = new float[3];
-			for (int i = 0; i < XGrange.length; i++) {
-				XGrange[i] = (prestate_min[Gtag] - prestate_max[Gtag]) / (XGrange.length - 1) * i + prestate_max[Gtag];
-				// System.out.println(XGrange[i]);
-			}
-
-			if (BatteryParam[Ll] * BatteryParam[RC] != prestate_min[0])
-				System.out.println("Error: Rmin inconsistent.");
-			if (BatteryParam[Lu] * BatteryParam[RC] != prestate_max[0])
-				System.out.println("Error: Rmax inconsistent.");
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (FileNotFoundException fnfe) {
+			fnfe.printStackTrace();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
 		} finally {
 			if (br != null) {
 				try {
@@ -189,13 +141,103 @@ public class Parameter {
 			}
 		}
 	}
+	/**
+	 * This function reads in the state space file and edits the state space
+	 * @param filename
+	 */
+	public void readStateSpace(String filename) {
+		BufferedReader br = null;
+		String line = "";
+		String splitBy = "=";
+		try {
+			br = new BufferedReader(new FileReader(filename));
+			while ((line = br.readLine()) != null) {
+				String[] input = line.split(splitBy);
+				if (input[0].equalsIgnoreCase("rmax")) {
+					state_max[R_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("rmin")) {
+					state_min[R_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("gmax")) {
+					//NOTE: G is reverse indexed
+					state_min[G_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("gmin")) {
+					state_max[G_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("pemax")) {
+					state_max[PE_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("pemin")) {
+					state_min[PE_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("pdmax")) {
+					state_max[PD_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("pdmin")) {
+					state_min[PD_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("dmax")) {
+					state_max[D_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("dmin")) {
+					state_min[D_index] = Float.parseFloat(input[1]);
+				} else if (input[0].equalsIgnoreCase("rsize")) {
+					state_size[R_index] = Integer.parseInt(input[1]);
+				} else if (input[0].equalsIgnoreCase("gsize")) {
+					state_size[G_index] = Integer.parseInt(input[1]);
+				} else if (input[0].equalsIgnoreCase("pdsize")) {
+					state_size[PD_index] = Integer.parseInt(input[1]);
+				} else if (input[0].equalsIgnoreCase("pesize")) {
+					state_size[PE_index] = Integer.parseInt(input[1]);
+				} else if (input[0].equalsIgnoreCase("dsize")) {
+					state_size[D_index] = Integer.parseInt(input[1]);
+				} 
+//				else if (input[0].equalsIgnoreCase("xgmax")) {
+//					BatteryParam[Ll] = Float.parseFloat(input[1]);
+//				} else if (input[0].equalsIgnoreCase("xgmin")) {
+//					BatteryParam[Ll] = Float.parseFloat(input[1]);
+//				} else if (input[0].equalsIgnoreCase("xgsize")) {
+//					BatteryParam[Ll] = Float.parseFloat(input[1]);
+//				}
+			}
+		} catch (
+
+		FileNotFoundException fnfe) {
+			fnfe.printStackTrace();
+		} catch (IOException ioe) {
+			ioe.printStackTrace();
+		} finally {
+			if (br != null) {
+				try {
+					br.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		Rrange = new float[state_size[R_index] + 1];
+		Grange = new float[state_size[G_index] + 1];
+		Drange = new float[state_size[D_index] + 1];
+		PErange = new float[state_size[PE_index] + 1];
+		PDrange = new float[state_size[PD_index] + 1];
+
+		float diff = (state_max[R_index] - state_min[R_index]) / state_size[R_index];
+		for (int i = 0; i < Rrange.length; i++)
+			Rrange[i] = diff * i + state_min[R_index];
+		diff = (state_max[G_index] - state_min[G_index]) / state_size[G_index];
+		for (int i = 0; i < Grange.length; i++)
+			Grange[i] = diff * i + state_min[G_index];
+		diff = (state_max[D_index] - state_min[D_index]) / state_size[D_index];
+		for (int i = 0; i < Drange.length; i++)
+			Drange[i] = diff * i + state_min[D_index];
+		diff = (state_max[PE_index] - state_min[PE_index]) / state_size[PE_index];
+		for (int i = 0; i < PErange.length; i++)
+			PErange[i] = diff * i + state_min[PE_index];
+		diff = (state_max[PD_index] - state_min[PD_index]) / state_size[PD_index];
+		for (int i = 0; i < PDrange.length; i++)
+			PDrange[i] = diff * i + state_min[PD_index];
+	}
 
 	public void modifyRTPrice(String fileName, int startHr) {
 		/* TODO: set up i/o here */
 		BufferedReader br = null;
 		String line = "";
 		String cvsSplitBy = ",";
-		LMPdensity = new float[24 * NoFiveMinPerHr][prestate_size[PEtag] + 1];
+		LMPdensity = new float[24 * NoFiveMinPerHr][state_size[PE_index] + 1];
 		try {
 			br = new BufferedReader(new FileReader(fileName));
 			int i = 0;
@@ -228,9 +270,8 @@ public class Parameter {
 			}
 		}
 
-		// pass by value
 		for (int i = 0; i < NoFiveMinPerHr; i++) {
-			for (int j = 0; j < prestate_size[PEtag] + 1; j++) {
+			for (int j = 0; j < state_size[PE_index] + 1; j++) {
 				PERTnextprob[i][j] = LMPdensity[startHr * NoFiveMinPerHr + i][j];
 			}
 		}
@@ -240,12 +281,8 @@ public class Parameter {
 		return LMPdensity;
 	}
 
-	public int getTStart() {
-		return TStart;
-	}
-
 	public int getDeltat() {
-		return deltat;
+		return delta_t;
 	}
 
 	public float getK() {
@@ -268,20 +305,20 @@ public class Parameter {
 		return PD;
 	}
 
-	public float getGfac() {
-		return Gfac;
+	public float getXG() {
+		return x_G;
 	}
 
-	public void setGfac(float Gfac_) {
-		Gfac = Gfac_;
+	public void setXG(float xg) {
+		x_G = xg;
 	}
 
-	public float getEcoBase() {
-		return EcoBase;
+	public float getXE() {
+		return x_E;
 	}
 
-	public void setEcoBase(float EcoBase_) {
-		EcoBase = EcoBase_;
+	public void setXE(float xe) {
+		x_E = xe;
 	}
 
 	public float[] getRrange() {
@@ -314,7 +351,6 @@ public class Parameter {
 
 	public void setPD(float pd) {
 		PD = pd;
-
 	}
 
 	public int get_row_part() {
@@ -345,7 +381,6 @@ public class Parameter {
 	}
 
 	public float[][] getPDRTnextprob() {
-		// TODO Auto-generated method stub
 		return PDRTnextprob;
 	}
 
@@ -373,7 +408,7 @@ public class Parameter {
 		PDrange = pDrange;
 	}
 
-	public void LoadDnext(float[][] trans_prob) {
+	public void setDnext(float[][] trans_prob) {
 		Dnext = new ArrayList<int[]>();
 		DnextProb = new ArrayList<float[]>();
 		for (int i = 0; i < trans_prob.length; i++) {
@@ -397,7 +432,7 @@ public class Parameter {
 			DnextProb.add(temp_prob);
 		}
 	}
-	// D_t is a first order markov
+
 	public int[] getDnext(int d) {
 		return Dnext.get(d);
 	}
@@ -406,7 +441,6 @@ public class Parameter {
 		return DnextProb.get(d);
 	}
 
-	
 	public Hashtable<String, int[][]> getRGtransOffset() {
 		return RGtransOffset;
 	}
@@ -414,12 +448,12 @@ public class Parameter {
 	public Hashtable<String, float[]> getRGtransmat() {
 		return RGtransMat;
 	}
-	
-	public void setRGtransOffset(Hashtable<String, int[][]> RGnext){
+
+	public void setRGtransOffset(Hashtable<String, int[][]> RGnext) {
 		RGtransOffset = RGnext;
 	}
-	
-	public void setRGtransmat(Hashtable<String, float[]> RGnextprob){
+
+	public void setRGtransmat(Hashtable<String, float[]> RGnextprob) {
 		RGtransMat = RGnextprob;
 	}
 }

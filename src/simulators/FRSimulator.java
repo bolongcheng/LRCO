@@ -45,10 +45,11 @@ public class FRSimulator extends Simulator {
 				path[i][GPath][j] = param.getGrange()[G];
 				path[i][DPath][j] = param.getDrange()[RegDPaths[i][j]];
 
-				FRState tempState = (FRState) solver.getState(R + G + RegDPaths[i][j]);
+				FRState tempState = (FRState) solver.getState(R * (param.getGrange().length * param.getDrange().length)
+						+ RegDPaths[i][j] * param.getDrange().length + G);
 				tempState.initialize(param);
 				if (tempState.getOptAction(j) == -1) {
-					((FRSolver) solver).findMax(tempState, j);
+					solver.findMax(tempState, j);
 				}
 				path[i][CostPath][j] = tempState.getCurrCost(tempState.getOptAction(j));
 				path[i][XDPath][j] = param.getDrange()[tempState.getOptActionString(j)];

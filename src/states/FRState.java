@@ -33,8 +33,8 @@ public class FRState extends State {
 		R = R_;
 		G = G_;
 		D = D_;
-		xE = param_.getEcoBase();
-		GLowBound = param_.getGfac();
+		xE = param_.getXE();
+		GLowBound = param_.getXG();
 		action_space = param_.getDrange();
 		V = new float[Parameter.NoTwoSecPerFiveMin + 1];
 		OptAction = new int[Parameter.NoTwoSecPerFiveMin + 1];

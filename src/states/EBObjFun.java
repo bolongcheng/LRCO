@@ -21,5 +21,13 @@ public class EBObjFun {
 		}
 		return cost;
 	}
+
+	public static float getRandCost(Parameter param, EBState state, float PE, int a, int Rnew) {
+		return -1 * PE * (param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(a)][0]]
+				* (param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(a)][0]] > 0 ? 1
+						: param.getBatteryParam()[Parameter.etad]) * param.getDeltat() * Parameter.NoTwoSecPerFiveMin +
+						param.getRrange()[Math.abs(Rnew - state.getR())]
+								/ ((Rnew - state.getR()) > 0 ? 1 : -1 * param.getBatteryParam()[Parameter.etad]));
+	}
 	
 }
