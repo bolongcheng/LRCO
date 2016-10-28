@@ -60,6 +60,12 @@ public abstract class Solver {
 	public void populateStates() {
 		populateStates(null);
 	}
+	
+	public void initializeStates(){
+			for (int s = 0; s < NumOfStates; s++) {
+				ArrayOfStates[s].initialize(param);
+		}
+	}
 
 	public abstract void populateStates(float[][] ValueFunction);
 

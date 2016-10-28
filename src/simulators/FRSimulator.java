@@ -48,6 +48,7 @@ public class FRSimulator extends Simulator {
 				FRState tempState = (FRState) solver
 						.getState(R * DG_length + RegDPaths[i][j] * param.getGrange().length + G);
 				tempState.initialize(param);
+//				System.out.println(j);
 				if (tempState.getOptAction(j) == -1) {
 					solver.findMax(tempState, j);
 				}

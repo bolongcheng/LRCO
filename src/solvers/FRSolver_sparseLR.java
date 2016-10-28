@@ -3,17 +3,13 @@ package solvers;
 import matlabcontrol.MatlabProxy;
 import matlabcontrol.MatlabProxyFactory;
 import matlabcontrol.extensions.*;
-import matlabcontrol.internal.*;
-
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 import matlabcontrol.MatlabConnectionException;
 import matlabcontrol.MatlabInvocationException;
 import matlabcontrol.MatlabProxyFactoryOptions;
+
 import states.State;
 import states.FRState;
-import utilities.CSVIO;
+import utilities.FastIO;
 import utilities.Parameter;
 import utilities.VFApprox;
 
@@ -177,7 +173,7 @@ public class FRSolver_sparseLR extends FRSolver {
 	 */
 	
 	public void setVFApprox(float[][] x_in, float[][] y_in, float[][] shift_in) {
-		for (int i = 0; i < Parameter.NoTwoSecPerFiveMin; i++) {
+		for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
 			VF_approx[i] = new VFApprox(param);
 			VF_approx[i].set_x_vector(x_in[i]);
 			VF_approx[i].set_y_vector(y_in[i]);
@@ -189,24 +185,24 @@ public class FRSolver_sparseLR extends FRSolver {
 		return VF_approx;
 	}
 
-	public float[][] getVFSVD(int choice) {
+	public float[][] getVFApprox(int choice) {
 		float[][] output = null;
 		switch (choice) {
 		case x_svd:
-			output = new float[Parameter.NoTwoSecPerFiveMin][VF_approx[0].get_x_vector1d().length];
-			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin; i++) {
+			output = new float[Parameter.NoTwoSecPerFiveMin+1][VF_approx[0].get_x_vector1d().length];
+			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
 				output[i] = VF_approx[i].get_x_vector1d();
 			}
 			break;
 		case y_svd:
-			output = new float[Parameter.NoTwoSecPerFiveMin][VF_approx[0].get_y_vector1d().length];
-			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin; i++) {
+			output = new float[Parameter.NoTwoSecPerFiveMin+1][VF_approx[0].get_y_vector1d().length];
+			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
 				output[i] = VF_approx[i].get_y_vector1d();
 			}
 			break;
 		case shift_mat:
-			output = new float[Parameter.NoTwoSecPerFiveMin][VF_approx[0].get_shift1d().length];
-			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin; i++) {
+			output = new float[Parameter.NoTwoSecPerFiveMin+1][VF_approx[0].get_shift1d().length];
+			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
 				output[i] = VF_approx[i].get_shift1d();
 			}
 			break;
@@ -218,9 +214,9 @@ public class FRSolver_sparseLR extends FRSolver {
 		String xfile = filePrefix + "_x.csv";
 		String yfile = filePrefix + "_y.csv";
 		String shiftfile = filePrefix + "_shift.csv";
-		CSVIO.Write2DArray(xfile, getVFSVD(FRSolver_sparseLR.x_svd));
-		CSVIO.Write2DArray(yfile, getVFSVD(FRSolver_sparseLR.y_svd));
-		CSVIO.Write2DArray(shiftfile, getVFSVD(FRSolver_sparseLR.shift_mat));
+		FastIO.Write2DFloatArray(xfile, getVFApprox(FRSolver_sparseLR.x_svd));
+		FastIO.Write2DFloatArray(yfile, getVFApprox(FRSolver_sparseLR.y_svd));
+		FastIO.Write2DFloatArray(shiftfile, getVFApprox(FRSolver_sparseLR.shift_mat));
 	}
 	
 	/**

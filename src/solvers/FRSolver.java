@@ -88,11 +88,4 @@ public class FRSolver extends Solver {
 		System.out.println("================================");
 
 	}
-
-	public void initializeStates() {
-		for (int s = 0; s < NumOfStates; s++) {
-			ArrayOfStates[s].initialize(param);
-		}
-	}
-
 }
