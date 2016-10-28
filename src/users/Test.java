@@ -3,7 +3,6 @@ package users;
 import java.io.File;
 
 import simulators.FRSimulator;
-import simulators.FRSimulator_sparseLR;
 import solvers.FRSolver;
 import solvers.FRSolver_sparseLR;
 import solvers.Solver;
@@ -48,7 +47,7 @@ public class Test {
 		int num_trial = 10;
 		int[][] dt = CSVIO.read2DArray(dirName + File.separator + "Input" + File.separator + "FiveMinDt_gen10.csv",
 				num_trial, Parameter.NoTwoSecPerFiveMin);
-		FRSimulator simulate = new FRSimulator_sparseLR(param, num_trial);
+		FRSimulator simulate = new FRSimulator(param, num_trial);
 		simulate.LoadSolver(solve);
 		simulate.setRegDPath(dt);
 		simulate.RunSimulation();

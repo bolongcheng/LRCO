@@ -14,7 +14,7 @@ public class EBSimulator extends Simulator {
 		path = new float[num_trial][6][Parameter.NoFiveMinPerHr + 1];
 		int R = 0;
 		int G = 0;
-		int RG_length = param.getGrange().length * param.getPErange().length;
+		int GP_length = param.getGrange().length * param.getPErange().length;
 		// simulating R,G trajectories
 		for (int i = 0; i < num_trial; i++) {
 			R = param.getRrange().length / 2;
@@ -25,7 +25,7 @@ public class EBSimulator extends Simulator {
 				path[i][2][j] = lmp[i][j];
 
 				EBState tempState = (EBState) solver
-						.getState(R * RG_length + G * param.getPErange().length + lmpClusters[i][j]);
+						.getState(R * GP_length + G * param.getPErange().length + lmpClusters[i][j]);
 				// FindMax(tempState, j);
 				if (tempState.getOptAction(j) == -1) {
 					solver.findMax(tempState, j);
