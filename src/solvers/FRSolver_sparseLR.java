@@ -35,7 +35,7 @@ public class FRSolver_sparseLR extends FRSolver {
 
 	public FRSolver_sparseLR(Parameter param_) {
 		super(param_);
-		VF_approx = new VFApprox[Parameter.NoTwoSecPerFiveMin];
+		VF_approx = new VFApprox[Parameter.NoTwoSecPerFiveMin+1];
 	}
 
 	public void initializeStates() {
@@ -75,7 +75,7 @@ public class FRSolver_sparseLR extends FRSolver {
 		}
 		System.out.println("Sample size: " + sampled_states.length);
 		sample_VF = new double[sampled_states.length][1];
-//		VF_approx[Parameter.NoTwoSecPerFiveMin] = new VFApprox(param);
+		VF_approx[Parameter.NoTwoSecPerFiveMin] = new VFApprox(param);
 	}
 
 	public void closeMatlab() {
@@ -91,7 +91,7 @@ public class FRSolver_sparseLR extends FRSolver {
 		for (int t = Parameter.NoTwoSecPerFiveMin - 1; t >= 0; t--) {
 			VF_approx[t] = new VFApprox(param);
 			for (int i = 0; i < sampStates.length; i++) {
-				FindMax(sampStates[i], t, i);
+				findMax(sampStates[i], t, i);
 			}
 			try {
 				processor.setNumericArray("sample_VF", new MatlabNumericArray(sample_VF, null));
@@ -123,11 +123,11 @@ public class FRSolver_sparseLR extends FRSolver {
 	 * @param t:
 	 *            indexing time
 	 */
-	private void FindMax(State state, int t, int sample_i) {
+	public void findMax(State state, int t, int sample_i) {
 		float max = Float.NEGATIVE_INFINITY;
 		int maxIndex = -1;
 		for (int i = 0; i < state.getFeasibleActions().size(); i++) {
-			float cost = state.getCurrCost(i) + FindNextStateExpectValue(state, i, t);
+			float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
 			if (cost > max) {
 				max = cost;
 				maxIndex = i;
@@ -153,7 +153,7 @@ public class FRSolver_sparseLR extends FRSolver {
 	 *            indexing time
 	 * @return
 	 */
-	private float FindNextStateExpectValue(State state, int i, int t) {
+	public float findNextStateExpectValue(State state, int i, int t) {
 		int Rnext = ((FRState) state).getRnext(i);
 		int Gnext = ((FRState) state).getGnext(i);
 		int[] Dnext = ((FRState) state).getDnext();

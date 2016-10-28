@@ -19,8 +19,8 @@ public class FRState extends State {
 	private static float[] action_space;
 
 	private float xE;
-	private float GLowBound;
-	private List<Integer> feasibleActions;
+	private float xG;
+//	private List<Integer> feasibleActions;
 
 	private int[] Rnext;
 	private int[] Gnext;
@@ -34,7 +34,7 @@ public class FRState extends State {
 		G = G_;
 		D = D_;
 		xE = param_.getXE();
-		GLowBound = param_.getXG();
+		xG = param_.getXG();
 		action_space = param_.getDrange();
 		V = new float[Parameter.NoTwoSecPerFiveMin + 1];
 		OptAction = new int[Parameter.NoTwoSecPerFiveMin + 1];
@@ -117,7 +117,7 @@ public class FRState extends State {
 				float Gdeg = Math.min(Math.abs(param.getDrange()[i] + param.getDrange()[D]) / param.getK(), 1);
 				if (XMag <= param.getBatteryParam()[Parameter.betac]) {
 					if (Rnew >= Rmin && Rnew <= Rmax) {
-						if (Gdeg <= GLowBound + epislon) {
+						if (Gdeg <= xG + epislon) {
 							feasibleActions.add(i);
 						}
 					}
@@ -130,7 +130,7 @@ public class FRState extends State {
 				float Gdeg = Math.min(Math.abs(param.getDrange()[i] + param.getDrange()[D]) / param.getK(), 1);
 				if (XMag <= param.getBatteryParam()[Parameter.betac]) {
 					if (Rnew >= Rmin && Rnew <= Rmax) {
-						if (Gdeg <= GLowBound + epislon) {
+						if (Gdeg <= xG + epislon) {
 							feasibleActions.add(i);
 						}
 					}
@@ -151,9 +151,9 @@ public class FRState extends State {
 		CurrCost = FRObjFun.getCurrCost(this, param);
 	}
 
-	public List<Integer> getFeasibleActions() {
-		return feasibleActions;
-	}
+//	public List<Integer> getFeasibleActions() {
+//		return feasibleActions;
+//	}
 
 	public void setxE(float xE_) {
 		xE = xE_;
@@ -163,12 +163,12 @@ public class FRState extends State {
 		return xE;
 	}
 
-	public void setGLowBound(float xg) {
-		GLowBound = xg;
+	public void setXG(float xg) {
+		xG = xg;
 	}
 
-	public float getGLowBound() {
-		return GLowBound;
+	public float getXG() {
+		return xG;
 	}
 
 	public int getG() {
@@ -202,7 +202,8 @@ public class FRState extends State {
 	public int getOptActionString(int t) {
 		return feasibleActions.get(OptAction[t]);
 	}
-
+	
+	//returns true if i is closer to the signal than the maxIndex
 	public boolean getTieBreak(int i, int maxIndex) {
 		return (Math.abs(action_space[getFeasibleActions().get(i)] + action_space[D]) < Math
 				.abs(action_space[getFeasibleActions().get(maxIndex)] + action_space[D]));

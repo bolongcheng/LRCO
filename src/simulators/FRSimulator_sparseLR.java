@@ -28,7 +28,8 @@ public class FRSimulator_sparseLR extends FRSimulator{
 				path[i][GPath][j] = param.getGrange()[G];
 				path[i][DPath][j] = param.getDrange()[RegDPaths[i][j]];
 			
-				FRState tempState = (FRState) solver.getState(R + G + RegDPaths[i][j]);
+				FRState tempState = (FRState) solver.getState(R * (param.getGrange().length * param.getDrange().length)
+						+ RegDPaths[i][j] * param.getGrange().length + G);
 				tempState.initialize(param);
 				if (tempState.getOptAction(j) == -1) {
 					((FRSolver_sparseLR) solver).findMax(tempState, j);

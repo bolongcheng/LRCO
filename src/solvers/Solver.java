@@ -40,7 +40,7 @@ public abstract class Solver {
 		float max = Float.NEGATIVE_INFINITY;
 		int maxIndex = -1;
 		for (int i = 0; i < state.getFeasibleActions().size(); i++) {
-			float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
+			 float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
 			if (cost > max) {
 				max = cost;
 				maxIndex = i;

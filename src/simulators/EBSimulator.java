@@ -27,8 +27,9 @@ public class EBSimulator extends Simulator {
 				EBState tempState = (EBState) solver
 						.getState(R * RG_length + G * param.getPErange().length + lmpClusters[i][j]);
 				// FindMax(tempState, j);
-				// NOTE: generate R+ and R- for the t+1.
-
+				if (tempState.getOptAction(j) == -1) {
+					solver.findMax(tempState, j);
+				}
 				int RGIndex = DiscreteHelpers.getProb((float) Math.random(),
 						tempState.getRGnextProbs(tempState.getOptAction(j)));
 				R = tempState.getRGnextStates(tempState.getOptAction(j))[RGIndex][0];

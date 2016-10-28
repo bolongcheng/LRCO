@@ -1,7 +1,6 @@
 package utilities;
 
 import java.util.Arrays;
-import java.util.List;
 
 public class DiscreteHelpers {
 	/**
@@ -21,10 +20,6 @@ public class DiscreteHelpers {
 			return array.length - 1;
 		int temp = Arrays.binarySearch(array, value + smalldiff);
 		return temp < 0 ? -temp - 2 : temp;
-
-		// while (i < array.length && array[i] <= value + smalldiff)
-		// i++;
-		// return i > 0 ? i - 1 : 0;
 	}
 
 	public static int GetRevIndex(float value, float[] array) {
@@ -33,6 +28,7 @@ public class DiscreteHelpers {
 		while (i < array.length && array[i] >= value + smalldiff)
 			i++;
 		return i > 0 ? i - 1 : 0;
+	
 	}
 
 	/**
@@ -199,4 +195,6 @@ public class DiscreteHelpers {
 		}
 		return newMatrix;
 	}
+	
+	
 }
