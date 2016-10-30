@@ -66,8 +66,6 @@ public class Parameter {
 	private float[] PDrange;
 	
 	private float[] XGrange;
-	private float[][] LMPdensity;
-	private float[][] PERTnextprob;
 	private float[][] RTPrice;
 	private float[][] fm_prob;
 	private float[][] price_prob;
@@ -85,12 +83,6 @@ public class Parameter {
 		state_size = new int[PD_index+1];
 		state_min = new float[PD_index+1];
 		state_max = new float[PD_index+1];
-		PERTnextprob = new float[NoFiveMinPerHr][state_size[PE_index] + 1];
-		XGrange = new float[3];
-		for (int i = 0; i < XGrange.length; i++) {
-			XGrange[i] = (state_min[G_index] - state_max[G_index]) / (XGrange.length - 1) * i + state_max[G_index];
-			// System.out.println(XGrange[i]);
-		}
 	}
 
 	public void readStaticParameters(String filename) {
@@ -230,55 +222,12 @@ public class Parameter {
 		diff = (state_max[PD_index] - state_min[PD_index]) / state_size[PD_index];
 		for (int i = 0; i < PDrange.length; i++)
 			PDrange[i] = diff * i + state_min[PD_index];
-	}
-
-	public void modifyRTPrice(String fileName, int startHr) {
-		/* TODO: set up i/o here */
-		BufferedReader br = null;
-		String line = "";
-		String cvsSplitBy = ",";
-		LMPdensity = new float[24 * NoFiveMinPerHr][state_size[PE_index] + 1];
-		try {
-			br = new BufferedReader(new FileReader(fileName));
-			int i = 0;
-			// The first line displays the clustered centers
-			if ((line = br.readLine()) != null) {
-				String[] input = line.split(cvsSplitBy);
-				for (int j = 0; j < input.length; j++) {
-					PErange[j] = Float.parseFloat(input[j]);
-				}
-			}
-			// The rest of the file is the price distribution
-			while ((line = br.readLine()) != null) {
-				String[] input = line.split(cvsSplitBy);
-				for (int j = 0; j < input.length; j++) {
-					LMPdensity[i][j] = Float.parseFloat(input[j]);
-				}
-				i++;
-			}
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} finally {
-			if (br != null) {
-				try {
-					br.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+		
+		//TODO needs clean up.
+		XGrange = new float[3];
+		for (int i = 0; i < XGrange.length; i++) {
+			XGrange[i] = (state_min[G_index] - state_max[G_index]) / (XGrange.length - 1) * i + state_max[G_index];
 		}
-
-		for (int i = 0; i < NoFiveMinPerHr; i++) {
-			for (int j = 0; j < state_size[PE_index] + 1; j++) {
-				PERTnextprob[i][j] = LMPdensity[startHr * NoFiveMinPerHr + i][j];
-			}
-		}
-	}
-
-	public float[][] getLMPdensity() {
-		return LMPdensity;
 	}
 
 	public int getDeltat() {
@@ -339,10 +288,6 @@ public class Parameter {
 
 	public float[] getXGrange() {
 		return XGrange;
-	}
-
-	public float[][] getPERTnextprob() {
-		return PERTnextprob;
 	}
 
 	public float getRTPrice(int index, int time) {

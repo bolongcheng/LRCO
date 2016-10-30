@@ -16,16 +16,15 @@ public class EBState extends State {
 	private static int[][] action_space;
 
 	// first element is xE, second element is xG
-	protected List<Integer> feasibleActions;
 	private List<int[][]> RGnext;
 	private List<float[]> RGnextProb;
 	protected int[] PEnext;
 	protected float[][] PEnextprob;
+	
+	public static final int XE_index = 0;
+	public static final int XG_index = 1;
 
-	public static final int PLUS = 0;
-	public static final int MINUS = 1;
-
-	public EBState(Parameter param_, int R_, int G_, int PE_) {
+	public EBState(Parameter param, int R_, int G_, int PE_) {
 		R = R_;
 		G = G_;
 		PE = PE_;
@@ -36,6 +35,17 @@ public class EBState extends State {
 			V[i] = Float.NEGATIVE_INFINITY;
 			OptAction[i] = -1;
 		}
+		if (action_space == null) {
+			action_space = new int[param.getDrange().length*param.getXGrange().length][2];
+			int a = 0;
+			for (int i = 0; i < param.getDrange().length; i++) {
+				for (int j = 0; j < param.getXGrange().length; j++) {
+					action_space[a][XE_index] = i;
+					action_space[a][XG_index] = j;
+					a++;
+				}
+			}
+		}
 	}
 
 	public void setFeasibleActions(Parameter param) {
@@ -44,14 +54,14 @@ public class EBState extends State {
 		feasibleActions = new ArrayList<Integer>();
 
 		for (int i = 0; i < action_space.length; i++) {
-			float Rnewup = param.getRrange()[R] + (param.getDrange()[action_space[i][0]]
-					+ param.getK() * (1 - param.getXGrange()[action_space[i][1]])) * Parameter.NoTwoSecPerFiveMin
+			float Rnewup = param.getRrange()[R] + (param.getDrange()[action_space[i][XE_index]]
+					+ param.getK() * (1 - param.getXGrange()[action_space[i][XG_index]])) * Parameter.NoTwoSecPerFiveMin
 					* param.getDeltat();
-			float Rnewdown = param.getRrange()[R] + (param.getDrange()[action_space[i][0]]
-					- param.getK() * (1 - param.getXGrange()[action_space[i][1]])) * Parameter.NoTwoSecPerFiveMin
+			float Rnewdown = param.getRrange()[R] + (param.getDrange()[action_space[i][XE_index]]
+					- param.getK() * (1 - param.getXGrange()[action_space[i][XG_index]])) * Parameter.NoTwoSecPerFiveMin
 					* param.getDeltat();
-			float XMag = Math.abs(param.getDrange()[action_space[i][0]] + param.getK()
-					* (1 - param.getXGrange()[action_space[i][1]]) * (param.getDrange()[i] > 0 ? 1 : -1));
+			float XMag = Math.abs(param.getDrange()[action_space[i][XE_index]] + param.getK()
+					* (1 - param.getXGrange()[action_space[i][XG_index]]) * (param.getDrange()[action_space[i][XE_index]] > 0 ? 1 : -1));
 			if (XMag <= param.getBatteryParam()[Parameter.betac]) {
 				if (Rnewdown >= Rmin && Rnewup <= Rmax) {
 					feasibleActions.add(i);
@@ -60,15 +70,16 @@ public class EBState extends State {
 		}
 	}
 
-	public boolean getTieBreak(int action_index, int maxIndex) {
-		// TODO Auto-generated method stub
+	public boolean getTieBreak(int action_index, int max_index) {
+		if (action_space[action_index][XG_index] < action_space[max_index][XG_index])
+			return true;
 		return false;
 	}
 
 	public void initialize(Parameter param_) {
 		setFeasibleActions(param_);
 		setRGnext(param_);
-		setPEnext(param_);
+		// setPEnext(param_);
 		setCurrCost(param_);
 	}
 
@@ -82,7 +93,7 @@ public class EBState extends State {
 
 	public int getPostDecR(Parameter param, int action) {
 		// TODO: Now we set the action to be the same as D.
-		float a = param.getDrange()[action_space[feasibleActions.get(action)][0]];
+		float a = param.getDrange()[action_space[feasibleActions.get(action)][XE_index]];
 		if (Math.abs(a) < 0.01)
 			return R;
 		float Rnew = param.getRrange()[R] + a * Parameter.NoTwoSecPerFiveMin * param.getDeltat()
@@ -96,8 +107,8 @@ public class EBState extends State {
 
 		for (int i = 0; i < feasibleActions.size(); i++) {
 			int RpostDec = getPostDecR(param, i);
-			int XE = action_space[feasibleActions.get(i)][0];
-			int XG = action_space[feasibleActions.get(i)][1];
+			int XE = action_space[feasibleActions.get(i)][XE_index];
+			int XG = action_space[feasibleActions.get(i)][XG_index];
 			String key;
 
 			if (XE == 0) {
@@ -157,12 +168,12 @@ public class EBState extends State {
 		}
 	}
 
-	public void setPEnext(Parameter param) {
-		PEnext = new int[param.getPErange().length];
-		for (int i = 0; i < param.getPErange().length; i++)
-			PEnext[i] = i;
-		PEnextprob = param.getPERTnextprob();
-	}
+	// public void setPEnext(Parameter param) {
+	// PEnext = new int[param.getPErange().length];
+	// for (int i = 0; i < param.getPErange().length; i++)
+	// PEnext[i] = i;
+	// PEnextprob = param.getPERTnextprob();
+	// }
 
 	/**
 	 * Computes the expected cost function E { C_t (S_t, x_t, W_{t+1})}
@@ -184,11 +195,11 @@ public class EBState extends State {
 	public int getPE() {
 		return PE;
 	}
-	
-	public static int[][] getActionSpace(){
+
+	public static int[][] getActionSpace() {
 		return action_space;
 	}
-	
+
 	public int[][] getRGnextStates(int action) {
 		return RGnext.get(action);
 	}

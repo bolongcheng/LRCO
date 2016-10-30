@@ -11,23 +11,25 @@ public class EBObjFun {
 			cost[i] = -1 * param.getPErange()[state.getPE()]
 					* (param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(i)][0]] > 0 ? 1
 							: param.getBatteryParam()[Parameter.etad])
-					* param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(i)][0]] * param.getDeltat()
-					* Parameter.NoTwoSecPerFiveMin;
+					* param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(i)][0]]
+					* param.getDeltat() * Parameter.NoTwoSecPerFiveMin;
 			float rand_cost = 0;
-			for (int j = 0; j < state.getRGnextProbs(i).length; i++)
-				rand_cost += 1 * (param.getRrange()[state.getRGnextStates(i)[j][0]] - param.getRrange()[Rpostdec])
+			for (int j = 0; j < state.getRGnextProbs(i).length; j++)
+				rand_cost += (param.getRrange()[state.getRGnextStates(i)[j][0]] - param.getRrange()[Rpostdec])
 						* state.getRGnextProbs(i)[j];
-			cost[i] += rand_cost*param.getPErange()[state.getPE()];
+			cost[i] += -1 * rand_cost * param.getPErange()[state.getPE()];
 		}
 		return cost;
 	}
 
 	public static float getRandCost(Parameter param, EBState state, float PE, int a, int Rnew) {
-		return -1 * PE * (param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(a)][0]]
-				* (param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(a)][0]] > 0 ? 1
-						: param.getBatteryParam()[Parameter.etad]) * param.getDeltat() * Parameter.NoTwoSecPerFiveMin +
-						param.getRrange()[Math.abs(Rnew - state.getR())]
+		return -1 * PE
+				* (param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(a)][0]]
+						* (param.getDrange()[EBState.getActionSpace()[state.getFeasibleActions().get(a)][0]] > 0 ? 1
+								: param.getBatteryParam()[Parameter.etad])
+						* param.getDeltat() * Parameter.NoTwoSecPerFiveMin
+						+ param.getRrange()[Math.abs(Rnew - state.getR())]
 								/ ((Rnew - state.getR()) > 0 ? 1 : -1 * param.getBatteryParam()[Parameter.etad]));
 	}
-	
+
 }

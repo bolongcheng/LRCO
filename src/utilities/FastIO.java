@@ -3,8 +3,17 @@ package utilities;
 import java.io.*;
 import java.nio.*;
 import java.nio.channels.FileChannel;
-import java.util.Random;
 
+/**
+ * This class is written for writing and reading arrays in binary format. Uses this java.nio API to
+ * open channels and allocate ByteBuffer the size of a single row of the data type. This
+ * implementation is about 3-5 times faster than the CSVIO implementation on average. Files are
+ * stored in .dat format and follows the Java convention for space allocation: e.g. 4bytes for
+ * single-precision float
+ * 
+ * @author bcheng
+ *
+ */
 public class FastIO {
 
 	public static void Write2DFloatArray(String fileName, float[][] arr) {
@@ -45,7 +54,7 @@ public class FastIO {
 						output[i][j] = buffer.getFloat();
 						j++;
 					}
-//					i++;
+					// i++;
 					buffer.clear();
 				}
 			} catch (IOException e) {

@@ -2,6 +2,13 @@ package utilities;
 
 import utilities.Parameter;
 
+/**
+ * This class is fore storing the sparse low rank approximations for a single time step. Each rank-1
+ * approximation is stored as x-vector, y-vector and a shift value.
+ * 
+ * @author bcheng
+ *
+ */
 
 public class VFApprox {
 	private Parameter param;
@@ -130,29 +137,28 @@ public class VFApprox {
 	}
 
 	public double get_V_approx(int R, int G, int D) {
-				
-//		int row_idx = 0;
-//		int col_idx = 0;
-		int row_idx = R/size_row;
-		int sub_R = R%size_row;
-//		System.out.println(row_idx + "_" + sub_R );
-//		if (R > 1)
-//			row_idx = (int) Math.ceil((double) R / size_row) - 1;
-//		else if (R == 0)
-//			row_idx = 0;
+
+		// int row_idx = 0;
+		// int col_idx = 0;
+		int row_idx = R / size_row;
+		int sub_R = R % size_row;
+		// System.out.println(row_idx + "_" + sub_R );
+		// if (R > 1)
+		// row_idx = (int) Math.ceil((double) R / size_row) - 1;
+		// else if (R == 0)
+		// row_idx = 0;
 
 		int g_d_idx = G + D * (param.getGrange().length);
-		int col_idx = g_d_idx/size_col;
-		int sub_gd = g_d_idx%size_col;
-//		System.out.println(g_d_idx + "_" + col_idx + "_" + sub_gd);
-//		if (g_d_idx > 1)
-//			col_idx = (int) Math.ceil((double) g_d_idx / size_col) - 1;
-//		else if (g_d_idx == 0)
-//			col_idx = 0;
-		
+		int col_idx = g_d_idx / size_col;
+		int sub_gd = g_d_idx % size_col;
+		// System.out.println(g_d_idx + "_" + col_idx + "_" + sub_gd);
+		// if (g_d_idx > 1)
+		// col_idx = (int) Math.ceil((double) g_d_idx / size_col) - 1;
+		// else if (g_d_idx == 0)
+		// col_idx = 0;
+
 		double V_approx = x[sub_R][row_idx][col_idx] * y[sub_gd][row_idx][col_idx] - shift[row_idx][col_idx];
 		return V_approx;
 	}
 
 }
-

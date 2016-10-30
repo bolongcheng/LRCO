@@ -1,7 +1,6 @@
 package states;
 
 import java.util.List;
-
 import utilities.Parameter;
 
 public abstract class State {

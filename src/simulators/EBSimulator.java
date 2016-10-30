@@ -14,7 +14,7 @@ public class EBSimulator extends Simulator {
 		path = new float[num_trial][6][Parameter.NoFiveMinPerHr + 1];
 		int R = 0;
 		int G = 0;
-		int GP_length = param.getGrange().length * param.getPErange().length;
+		int GPE_length = param.getGrange().length * param.getPErange().length;
 		// simulating R,G trajectories
 		for (int i = 0; i < num_trial; i++) {
 			R = param.getRrange().length / 2;
@@ -25,7 +25,7 @@ public class EBSimulator extends Simulator {
 				path[i][2][j] = lmp[i][j];
 
 				EBState tempState = (EBState) solver
-						.getState(R * GP_length + G * param.getPErange().length + lmpClusters[i][j]);
+						.getState(R * GPE_length + G * param.getPErange().length + lmpClusters[i][j]);
 				// FindMax(tempState, j);
 				if (tempState.getOptAction(j) == -1) {
 					solver.findMax(tempState, j);
@@ -45,8 +45,8 @@ public class EBSimulator extends Simulator {
 			path[i][0][Parameter.NoFiveMinPerHr] = param.getRrange()[R];
 			path[i][1][Parameter.NoFiveMinPerHr] = param.getGrange()[G];
 
-			EBState tempState = (EBState) solver.getState(R * (param.getGrange().length * param.getPErange().length)
-					+ G * param.getPErange().length + lmpClusters[i][0]);
+			EBState tempState = (EBState) solver
+					.getState(R * GPE_length + G * param.getPErange().length + lmpClusters[i][0]);
 
 			path[i][3][Parameter.NoFiveMinPerHr] = tempState.getValueFunction(Parameter.NoFiveMinPerHr);
 		}

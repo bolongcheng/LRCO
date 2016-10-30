@@ -36,26 +36,43 @@ public class EBSolver extends Solver {
 		float value = 0;
 		int i = 0;
 		// intra-hour transition, PD fixed, PE changes
-		EBState[] nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length
-				* param.getPErange().length];
-		float[] prob = new float[nextstates.length];
-		i = 0;
-		for (int pe = 0; pe < param.getPErange().length; pe++) {
-			if (param.getFm_prob()[pe][t + 1] > 0.000001) {
-				for (int rg = 0; rg < ((EBState) state).getRGnextProbs(actionIndex).length; rg++) {
-					nextstates[i] = (EBState) ArrayOfStates[((EBState) state).getRGnextStates(actionIndex)[rg][0]
-							* (param.getPErange().length * param.getGrange().length)
-							+ ((EBState) state).getRGnextStates(actionIndex)[rg][1] * param.getPErange().length + pe];
-					prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg] * param.getFm_prob()[pe][t + 1];
-					i++;
+		int GPE_length = param.getGrange().length * param.getPErange().length;
+		EBState[] nextstates;
+		float[] prob;
+		if (t == Parameter.NoFiveMinPerHr - 1) {
+			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length];
+			prob = new float[nextstates.length];
+			for (int rg = 0; rg < nextstates.length; rg++) {
+				nextstates[rg] = (EBState) ArrayOfStates[((EBState) state).getRGnextStates(actionIndex)[rg][0]
+						* GPE_length + ((EBState) state).getRGnextStates(actionIndex)[rg][1] * param.getPErange().length
+						+ ((EBState) state).getPE()];
+				prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg];
+			}
+		} else {
+			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length * param.getPErange().length];
+			prob = new float[nextstates.length];
+			i = 0;
+			for (int pe = 0; pe < param.getPErange().length; pe++) {
+				if (param.getFm_prob()[pe][t + 1] > 0.000001) {
+					for (int rg = 0; rg < ((EBState) state).getRGnextProbs(actionIndex).length; rg++) {
+						nextstates[i] = (EBState) ArrayOfStates[((EBState) state).getRGnextStates(actionIndex)[rg][0]
+								* GPE_length
+								+ ((EBState) state).getRGnextStates(actionIndex)[rg][1] * param.getPErange().length
+								+ pe];
+						prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg] * param.getFm_prob()[pe][t + 1];
+						i++;
+					}
 				}
 			}
 		}
 
 		for (i = 0; i < nextstates.length; i++) {
-			value += prob[i] * nextstates[i].getValueFunction(t + 1);
+			if (nextstates[i] != null)
+				value += prob[i] * nextstates[i].getValueFunction(t + 1);
 		}
+
 		return value;
+
 	}
 
 	public void populateStates(float[][] ValueFunction) {
