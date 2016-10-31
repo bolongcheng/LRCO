@@ -6,7 +6,7 @@ public abstract class Simulator {
 	protected Parameter param;
 	protected Solver solver;
 	protected float [][][] path;
-	protected int num_trial;
+	protected int numTrial;
 	
 	public void LoadSolver(Solver solver_){
 		solver = solver_;

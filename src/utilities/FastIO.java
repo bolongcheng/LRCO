@@ -16,7 +16,7 @@ import java.nio.channels.FileChannel;
  */
 public class FastIO {
 
-	public static void Write2DFloatArray(String fileName, float[][] arr) {
+	public static void write2DFloatArray(String fileName, float[][] arr) {
 
 		File file = new File(fileName);
 		try {
@@ -30,7 +30,7 @@ public class FastIO {
 
 	}
 
-	public static float[][] Read2DFloatArray(String fileName, int row, int col) {
+	public static float[][] read2DFloatArray(String fileName, int row, int col) {
 		float[][] output = new float[row][col];
 		FileInputStream f;
 		try {

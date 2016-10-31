@@ -11,21 +11,21 @@ public class DiscreteHelpers {
 	 * @param array
 	 * @return
 	 */
-	public static int GetIndex(float value, float[] array) {
+	public static int getIndex(float value, float[] array) {
 		// int i = 0;
-		float smalldiff = (array[1] - array[0]) / 2;
+		float smallDiff = (array[1] - array[0]) / 2;
 		if (value <= array[0])
 			return 0;
 		if (value >= array[array.length - 1])
 			return array.length - 1;
-		int temp = Arrays.binarySearch(array, value + smalldiff);
+		int temp = Arrays.binarySearch(array, value + smallDiff);
 		return temp < 0 ? -temp - 2 : temp;
 	}
 
-	public static int GetRevIndex(float value, float[] array) {
+	public static int getRevIndex(float value, float[] array) {
 		int i = 0;
-		float smalldiff = (array[1] - array[0]) / 2;
-		while (i < array.length && array[i] >= value + smalldiff)
+		float smallDiff = (array[1] - array[0]) / 2;
+		while (i < array.length && array[i] >= value + smallDiff)
 			i++;
 		return i > 0 ? i - 1 : 0;
 	

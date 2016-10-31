@@ -11,7 +11,7 @@ import java.io.IOException;
 public class CSVIO {
 	
 	// for float matrix
-	public static float[][] Read2DArray(String fileName, int numRow, int numCol) {
+	public static float[][] read2DFloatArray(String fileName, int numRow, int numCol) {
 		if (!fileName.endsWith("csv"))
 			fileName = fileName + ".csv";
 		BufferedReader br = null;
@@ -49,7 +49,7 @@ public class CSVIO {
 	}
 	
 	// for float matrix
-	public static void Write2DArray(String fileName, float[][] VF) {
+	public static void write2DFloatArray(String fileName, float[][] VF) {
 		try {
 			if (!fileName.endsWith("csv"))
 				fileName = fileName + ".csv";
@@ -72,7 +72,7 @@ public class CSVIO {
 	}
 	
 	// For int array
-	public static int[] read1DArray (String fileName) {
+	public static int[] read1DIntArray (String fileName) {
 		int[] days = null;
 		BufferedReader br = null;
 		String line = "";
@@ -105,7 +105,7 @@ public class CSVIO {
 	}
 	
 	// For float array
-	public static float[] Read1DArray (String fileName) {
+	public static float[] read1DFloatArray (String fileName) {
 		float[] output = null;
 		BufferedReader br = null;
 		String line = "";
@@ -138,7 +138,7 @@ public class CSVIO {
 	}
 	
 	// for int array
-	public static void write1DArray (String fileName, int[] output) {
+	public static void write1DIntArray (String fileName, int[] output) {
 		try {
 			if (!fileName.endsWith("csv"))
 				fileName = fileName + ".csv";
@@ -159,7 +159,7 @@ public class CSVIO {
 	}
 	
 	// for int matrix
-	public static int[][] read2DArray(String fileName, int numRow, int numCol) {
+	public static int[][] read2DIntArray(String fileName, int numRow, int numCol) {
 		if (!fileName.endsWith("csv"))
 			fileName = fileName + ".csv";
 		BufferedReader br = null;
@@ -197,7 +197,7 @@ public class CSVIO {
 	}
 	
 	// for int matrix
-	public static void Write2DArray(String fileName, int[][] output) {
+	public static void write2DIntArray(String fileName, int[][] output) {
 		try {
 			if (!fileName.endsWith("csv"))
 				fileName = fileName + ".csv";

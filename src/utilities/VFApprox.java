@@ -18,32 +18,32 @@ public class VFApprox {
 	private double[][][] y;
 	private double[][] shift;
 	// sub_matrices info
-	private int row_part; // how many sub-matrices from top to bottom
-	private int col_part; // how many sub-matrices from left to right
-	private int size_row; // row size of sub-matrices
-	private int size_col; // column size of sub-matrices
-	private int num_subs; // number of sub-matrices
+	private int rowPart; // how many sub-matrices from top to bottom
+	private int colPart; // how many sub-matrices from left to right
+	private int sizeRow; // row size of sub-matrices
+	private int sizeCol; // column size of sub-matrices
+//	private int num_subs; // number of sub-matrices
 
 	public VFApprox(Parameter param_) {
 		param = param_;
-		row_part = param.get_row_part();
-		col_part = param.get_col_part();
-		size_row = param.get_size_row();
-		size_col = param.get_size_col();
-		num_subs = param.get_num_subs();
+		rowPart = param.getRowPart();
+		colPart = param.getColPart();
+		sizeRow = param.getSizeRow();
+		sizeCol = param.getSizeCol();
+//		num_subs = param.get_num_subs();
 
-		// row_part and col_part indices are the indices of the sub-matrix.
+		// rowPart and colPart indices are the indices of the sub-matrix.
 		// There is one shift for each sub-matrix
-		x = new double[size_row][row_part][col_part];
-		y = new double[size_col][row_part][col_part];
-		shift = new double[row_part][col_part];
+		x = new double[sizeRow][rowPart][colPart];
+		y = new double[sizeCol][rowPart][colPart];
+		shift = new double[rowPart][colPart];
 	}
 
-	public void set_x_vector(double[][][] x_) {
+	public void setXVector(double[][][] x_) {
 		x = x_;
 	}
 
-	public void set_x_vector(float[] x_in) {
+	public void setXVector(float[] x_in) {
 		int l = 0;
 		for (int i = 0; i < x.length; i++) {
 			for (int j = 0; j < x[i].length; j++) {
@@ -56,11 +56,11 @@ public class VFApprox {
 
 	}
 
-	public void set_y_vector(double[][][] y_) {
+	public void setYVector(double[][][] y_) {
 		y = y_;
 	}
 
-	public void set_y_vector(float[] y_in) {
+	public void setYVector(float[] y_in) {
 		int l = 0;
 		for (int i = 0; i < y.length; i++) {
 			for (int j = 0; j < y[i].length; j++) {
@@ -73,11 +73,11 @@ public class VFApprox {
 
 	}
 
-	public void set_shift(double[][] shift_) {
+	public void setShift(double[][] shift_) {
 		shift = shift_;
 	}
 
-	public void set_shift(float[] shift_in) {
+	public void setShift(float[] shift_in) {
 		int l = 0;
 		for (int i = 0; i < shift.length; i++) {
 			for (int j = 0; j < shift[i].length; j++) {
@@ -88,7 +88,7 @@ public class VFApprox {
 
 	}
 
-	public float[] get_shift1d() {
+	public float[] getShift1D() {
 		float[] output = new float[shift.length * shift[0].length];
 		int l = 0;
 		for (int i = 0; i < shift.length; i++) {
@@ -100,11 +100,11 @@ public class VFApprox {
 		return output;
 	}
 
-	public double[][][] get_x_vector() {
+	public double[][][] getXVector() {
 		return x;
 	}
 
-	public float[] get_x_vector1d() {
+	public float[] getXVector1D() {
 		float[] output = new float[x.length * x[0].length * x[0][0].length];
 		int l = 0;
 		for (int i = 0; i < x.length; i++) {
@@ -118,11 +118,11 @@ public class VFApprox {
 		return output;
 	}
 
-	public double[][][] get_y_vector() {
+	public double[][][] getYVector() {
 		return y;
 	}
 
-	public float[] get_y_vector1d() {
+	public float[] getYVector1D() {
 		float[] output = new float[y.length * y[0].length * y[0][0].length];
 		int l = 0;
 		for (int i = 0; i < y.length; i++) {
@@ -136,28 +136,28 @@ public class VFApprox {
 		return output;
 	}
 
-	public double get_V_approx(int R, int G, int D) {
+	public double getVApprox(int R, int G, int D) {
 
-		// int row_idx = 0;
-		// int col_idx = 0;
-		int row_idx = R / size_row;
-		int sub_R = R % size_row;
-		// System.out.println(row_idx + "_" + sub_R );
+		// int rowIndex = 0;
+		// int colIndex = 0;
+		int rowIndex = R / sizeRow;
+		int subR = R % sizeRow;
+		// System.out.println(rowIndex + "_" + subR );
 		// if (R > 1)
-		// row_idx = (int) Math.ceil((double) R / size_row) - 1;
+		// rowIndex = (int) Math.ceil((double) R / sizeRow) - 1;
 		// else if (R == 0)
-		// row_idx = 0;
+		// rowIndex = 0;
 
-		int g_d_idx = G + D * (param.getGrange().length);
-		int col_idx = g_d_idx / size_col;
-		int sub_gd = g_d_idx % size_col;
-		// System.out.println(g_d_idx + "_" + col_idx + "_" + sub_gd);
-		// if (g_d_idx > 1)
-		// col_idx = (int) Math.ceil((double) g_d_idx / size_col) - 1;
-		// else if (g_d_idx == 0)
-		// col_idx = 0;
+		int GDInex = G + D * (param.getGrange().length);
+		int colIndex = GDInex / sizeCol;
+		int subGD = GDInex % sizeCol;
+		// System.out.println(GDInex + "_" + colIndex + "_" + subGD);
+		// if (GDInex > 1)
+		// colIndex = (int) Math.ceil((double) GDInex / sizeCol) - 1;
+		// else if (GDInex == 0)
+		// colIndex = 0;
 
-		double V_approx = x[sub_R][row_idx][col_idx] * y[sub_gd][row_idx][col_idx] - shift[row_idx][col_idx];
+		double V_approx = x[subR][rowIndex][colIndex] * y[subGD][rowIndex][colIndex] - shift[rowIndex][colIndex];
 		return V_approx;
 	}
 

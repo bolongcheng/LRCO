@@ -63,7 +63,7 @@ public class FRSolver extends Solver {
 					for (int g = 0; g < param.getGrange().length; g++) {
 						FRState newState = new FRState(param, r, g, d);
 						newState.setValueFunction(param.getK() * param.getPD() * param.getGrange()[g]
-								* (param.getGrange()[g] >= 0.4 ? 1 : 0), Parameter.NoTwoSecPerFiveMin);
+								* (param.getGrange()[g] >= 0.4 ? 1 : 0), Parameter.NO_TWO_SEC_PER_FIVE_MIN);
 						ArrayOfStates[s] = newState;
 						s++;
 					}
@@ -74,7 +74,7 @@ public class FRSolver extends Solver {
 				for (int d = 0; d < param.getDrange().length; d++) {
 					for (int g = 0; g < param.getGrange().length; g++) {
 						FRState newState = new FRState(param, r, g, d);
-						newState.setValueFunction(Truterminal_value_function[r][g], Parameter.NoTwoSecPerFiveMin);
+						newState.setValueFunction(Truterminal_value_function[r][g], Parameter.NO_TWO_SEC_PER_FIVE_MIN);
 						ArrayOfStates[s] = newState;
 						s++;
 					}

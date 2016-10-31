@@ -29,8 +29,8 @@ public class EBState extends State {
 		G = G_;
 		PE = PE_;
 
-		V = new float[Parameter.NoFiveMinPerHr + 1];
-		OptAction = new int[Parameter.NoFiveMinPerHr + 1];
+		V = new float[Parameter.NO_FIVE_MIN_PER_HR + 1];
+		OptAction = new int[Parameter.NO_FIVE_MIN_PER_HR + 1];
 		for (int i = 0; i < V.length; i++) {
 			V[i] = Float.NEGATIVE_INFINITY;
 			OptAction[i] = -1;
@@ -55,14 +55,14 @@ public class EBState extends State {
 
 		for (int i = 0; i < action_space.length; i++) {
 			float Rnewup = param.getRrange()[R] + (param.getDrange()[action_space[i][XE_index]]
-					+ param.getK() * (1 - param.getXGrange()[action_space[i][XG_index]])) * Parameter.NoTwoSecPerFiveMin
+					+ param.getK() * (1 - param.getXGrange()[action_space[i][XG_index]])) * Parameter.NO_TWO_SEC_PER_FIVE_MIN
 					* param.getDeltat();
 			float Rnewdown = param.getRrange()[R] + (param.getDrange()[action_space[i][XE_index]]
-					- param.getK() * (1 - param.getXGrange()[action_space[i][XG_index]])) * Parameter.NoTwoSecPerFiveMin
+					- param.getK() * (1 - param.getXGrange()[action_space[i][XG_index]])) * Parameter.NO_TWO_SEC_PER_FIVE_MIN
 					* param.getDeltat();
 			float XMag = Math.abs(param.getDrange()[action_space[i][XE_index]] + param.getK()
 					* (1 - param.getXGrange()[action_space[i][XG_index]]) * (param.getDrange()[action_space[i][XE_index]] > 0 ? 1 : -1));
-			if (XMag <= param.getBatteryParam()[Parameter.betac]) {
+			if (XMag <= param.getBatteryParam()[Parameter.BETA_C]) {
 				if (Rnewdown >= Rmin && Rnewup <= Rmax) {
 					feasibleActions.add(i);
 				}
@@ -96,9 +96,9 @@ public class EBState extends State {
 		float a = param.getDrange()[action_space[feasibleActions.get(action)][XE_index]];
 		if (Math.abs(a) < 0.01)
 			return R;
-		float Rnew = param.getRrange()[R] + a * Parameter.NoTwoSecPerFiveMin * param.getDeltat()
-				* (a > 0 ? param.getBatteryParam()[Parameter.etac] : 1);
-		return DiscreteHelpers.GetIndex(Rnew, param.getRrange());
+		float Rnew = param.getRrange()[R] + a * Parameter.NO_TWO_SEC_PER_FIVE_MIN * param.getDeltat()
+				* (a > 0 ? param.getBatteryParam()[Parameter.ETA_C] : 1);
+		return DiscreteHelpers.getIndex(Rnew, param.getRrange());
 	}
 
 	public void setRGnext(Parameter param) {

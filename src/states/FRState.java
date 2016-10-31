@@ -36,8 +36,8 @@ public class FRState extends State {
 		xE = param_.getXE();
 		xG = param_.getXG();
 		action_space = param_.getDrange();
-		V = new float[Parameter.NoTwoSecPerFiveMin + 1];
-		OptAction = new int[Parameter.NoTwoSecPerFiveMin + 1];
+		V = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
+		OptAction = new int[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
 		for (int i = 0; i < V.length; i++) {
 			V[i] = Float.NEGATIVE_INFINITY;
 			OptAction[i] = -1;
@@ -72,11 +72,11 @@ public class FRState extends State {
 							.min(Math
 									.abs(param.getDrange()[feasibleActions.get(i)]
 											* (param.getDrange()[feasibleActions.get(i)] < 0
-													? param.getBatteryParam()[Parameter.etad] : 1)
+													? param.getBatteryParam()[Parameter.ETA_D] : 1)
 											+ param.getDrange()[D])
 									/ param.getK(), 1)
-							/ (Parameter.NoTwoSecPerFiveMin * Parameter.NoFiveMinPerHr);
-			Gnext[i] = DiscreteHelpers.GetRevIndex(Gnew, param.getGrange());
+							/ (Parameter.NO_TWO_SEC_PER_FIVE_MIN * Parameter.NO_FIVE_MIN_PER_HR);
+			Gnext[i] = DiscreteHelpers.getRevIndex(Gnew, param.getGrange());
 		}
 	}
 
@@ -91,9 +91,9 @@ public class FRState extends State {
 		Rnext = new int[feasibleActions.size()];
 		for (int i = 0; i < feasibleActions.size(); i++) {
 			float Rnew = param.getRrange()[R] + (param.getDrange()[feasibleActions.get(i)] + xE) * param.getDeltat()
-					* (((xE + param.getDrange()[feasibleActions.get(i)] > 0) ? param.getBatteryParam()[Parameter.etac]
+					* (((xE + param.getDrange()[feasibleActions.get(i)] > 0) ? param.getBatteryParam()[Parameter.ETA_C]
 							: 1));
-			Rnext[i] = DiscreteHelpers.GetIndex(Rnew, param.getRrange());
+			Rnext[i] = DiscreteHelpers.getIndex(Rnew, param.getRrange());
 		}
 	}
 
@@ -115,7 +115,7 @@ public class FRState extends State {
 				float XMag = Math.abs(param.getDrange()[i] + xE);
 				float Rnew = param.getRrange()[R] + (param.getDrange()[i] + xE) * param.getDeltat();
 				float Gdeg = Math.min(Math.abs(param.getDrange()[i] + param.getDrange()[D]) / param.getK(), 1);
-				if (XMag <= param.getBatteryParam()[Parameter.betac]) {
+				if (XMag <= param.getBatteryParam()[Parameter.BETA_C]) {
 					if (Rnew >= Rmin && Rnew <= Rmax) {
 						if (Gdeg <= xG + epislon) {
 							feasibleActions.add(i);
@@ -128,7 +128,7 @@ public class FRState extends State {
 				float XMag = Math.abs(param.getDrange()[i] + xE);
 				float Rnew = param.getRrange()[R] + (param.getDrange()[i] + xE) * param.getDeltat();
 				float Gdeg = Math.min(Math.abs(param.getDrange()[i] + param.getDrange()[D]) / param.getK(), 1);
-				if (XMag <= param.getBatteryParam()[Parameter.betac]) {
+				if (XMag <= param.getBatteryParam()[Parameter.BETA_C]) {
 					if (Rnew >= Rmin && Rnew <= Rmax) {
 						if (Gdeg <= xG + epislon) {
 							feasibleActions.add(i);

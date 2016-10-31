@@ -9,8 +9,8 @@ public class FRObjFun {
 		for (int i = 0; i < cost.length; i++) {
 			float action = param.getDrange()[state.getFeasibleActions().get(i)];
 			cost[i] = -1 * param.getPE()
-					* (state.getxE() * (state.getxE() > 0 ? 1 : param.getBatteryParam()[Parameter.etad])
-							+ (action > 0 ? action : param.getBatteryParam()[Parameter.etad] * action))
+					* (state.getxE() * (state.getxE() > 0 ? 1 : param.getBatteryParam()[Parameter.ETA_D])
+							+ (action > 0 ? action : param.getBatteryParam()[Parameter.ETA_D] * action))
 					* param.getDeltat();
 		}
 		return cost;

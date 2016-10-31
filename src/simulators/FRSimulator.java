@@ -1,6 +1,5 @@
 package simulators;
 
-import solvers.FRSolver;
 import states.FRState;
 import utilities.Parameter;
 
@@ -16,11 +15,11 @@ public class FRSimulator extends Simulator {
 
 	public FRSimulator(Parameter param_, int num) {
 		param = param_;
-		num_trial = num;
+		numTrial = num;
 	}
 
 	public void setRegDPath(int[][] dt) {
-		if (dt.length < num_trial) {
+		if (dt.length < numTrial) {
 			System.out.println("TRIAL NUMBER MISMATCH");
 		} else {
 			RegDPaths = dt;
@@ -28,19 +27,19 @@ public class FRSimulator extends Simulator {
 	}
 
 	public void RunSimulation() {
-		path = new float[num_trial][5][Parameter.NoTwoSecPerFiveMin + 1];
+		path = new float[numTrial][5][Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
 		int R = 0;
 		int G = 0;
 		System.out.println("================================");
-		System.out.println("SIMULATE RegD: " + num_trial + " TRIALS.");
+		System.out.println("SIMULATE RegD: " + numTrial + " TRIALS.");
 		System.out.println("================================");
 		int DG_length = (param.getGrange().length * param.getDrange().length);
 		// Simulating the entire trajectories.
-		for (int i = 0; i < num_trial; i++) {
+		for (int i = 0; i < numTrial; i++) {
 			// we always start with half-full capacity and full perf score.
 			R = param.getRrange().length / 2;
 			G = 0;
-			for (int j = 0; j < Parameter.NoTwoSecPerFiveMin; j++) {
+			for (int j = 0; j < Parameter.NO_TWO_SEC_PER_FIVE_MIN; j++) {
 				path[i][RPath][j] = param.getRrange()[R];
 				path[i][GPath][j] = param.getGrange()[G];
 				path[i][DPath][j] = param.getDrange()[RegDPaths[i][j]];
@@ -48,7 +47,6 @@ public class FRSimulator extends Simulator {
 				FRState tempState = (FRState) solver
 						.getState(R * DG_length + RegDPaths[i][j] * param.getGrange().length + G);
 				tempState.initialize(param);
-//				System.out.println(j);
 				if (tempState.getOptAction(j) == -1) {
 					solver.findMax(tempState, j);
 				}

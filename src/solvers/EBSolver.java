@@ -39,7 +39,7 @@ public class EBSolver extends Solver {
 		int GPE_length = param.getGrange().length * param.getPErange().length;
 		EBState[] nextstates;
 		float[] prob;
-		if (t == Parameter.NoFiveMinPerHr - 1) {
+		if (t == Parameter.NO_FIVE_MIN_PER_HR - 1) {
 			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length];
 			prob = new float[nextstates.length];
 			for (int rg = 0; rg < nextstates.length; rg++) {
@@ -53,13 +53,13 @@ public class EBSolver extends Solver {
 			prob = new float[nextstates.length];
 			i = 0;
 			for (int pe = 0; pe < param.getPErange().length; pe++) {
-				if (param.getFm_prob()[pe][t + 1] > 0.000001) {
+				if (param.getFmProb()[pe][t + 1] > 0.000001) {
 					for (int rg = 0; rg < ((EBState) state).getRGnextProbs(actionIndex).length; rg++) {
 						nextstates[i] = (EBState) ArrayOfStates[((EBState) state).getRGnextStates(actionIndex)[rg][0]
 								* GPE_length
 								+ ((EBState) state).getRGnextStates(actionIndex)[rg][1] * param.getPErange().length
 								+ pe];
-						prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg] * param.getFm_prob()[pe][t + 1];
+						prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg] * param.getFmProb()[pe][t + 1];
 						i++;
 					}
 				}
@@ -90,7 +90,7 @@ public class EBSolver extends Solver {
 					// set all V_t^1 = 0, for all t;
 					newState.setValueFunction(
 							param.getK() * param.getPD() * param.getGrange()[g] * (param.getGrange()[g] >= 0.4 ? 1 : 0),
-							Parameter.NoFiveMinPerHr);
+							Parameter.NO_FIVE_MIN_PER_HR);
 					ArrayOfStates[s] = newState;
 					s++;
 				}

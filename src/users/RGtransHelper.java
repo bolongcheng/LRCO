@@ -9,9 +9,9 @@ public class RGtransHelper {
 	private Hashtable<String, float[]> RGtransProb;
 	
 	public RGtransHelper(String probfile, String statefile, String indexfile) {
-		float[] transMatrices = CSVIO.Read1DArray(probfile);
-		int[][] transStates = CSVIO.read2DArray(statefile, transMatrices.length, 2);
-		int[] indices = CSVIO.read1DArray(indexfile);
+		float[] transMatrices = CSVIO.read1DFloatArray(probfile);
+		int[][] transStates = CSVIO.read2DIntArray(statefile, transMatrices.length, 2);
+		int[] indices = CSVIO.read1DIntArray(indexfile);
 		int count = 0;
 		
 		RGtransState = new Hashtable<String, int[][]>();

@@ -8,7 +8,7 @@ public class IOHelpers {
 	 * @param input
 	 * @return
 	 */
-	public static float[][] Convert3Dto2D(float[][][] input) {
+	public static float[][] convert3Dto2D(float[][][] input) {
 		float[][] output = new float[input.length * input[0].length][input[0][0].length];
 
 		for (int i = 0; i < input.length; i++) {

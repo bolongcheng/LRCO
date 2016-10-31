@@ -14,24 +14,24 @@ import utilities.Parameter;
 import utilities.VFApprox;
 
 public class FRSolver_sparseLR extends FRSolver {
-	public static final int x_svd = 1;
-	public static final int y_svd = 2;
-	public static final int shift_mat = 3;
+	public static final int X_SVD = 1;
+	public static final int Y_SVD = 2;
+	public static final int SHIFT_MAT = 3;
 
-	private static final String matlab_directory = "/opt/matlab-r2015a/bin/matlab";
-	private static final String cd_directory = "cd('/home/vault/bcheng/LRCO')";
+	private final String matlab_directory = "/opt/matlab-r2015a/bin/matlab";
+	private final String cd_directory = "cd('/home/vault/bcheng/LRCO')";
 
 	private MatlabProxyFactory factory;
 	private MatlabProxy proxy;
 	private MatlabTypeConverter processor;
 	private VFApprox[] VF_approx;
-	private double[][] sampled_states;
-	private double[][] sample_VF; // value function computed for sampled states
-	private FRState[] sampStates;
+	private double[][] sampleStatesCoord;
+	private double[][] sampleVF; // value function computed for sampled states
+	private FRState[] sampledStates;
 
 	public FRSolver_sparseLR(Parameter param_) {
 		super(param_);
-		VF_approx = new VFApprox[Parameter.NoTwoSecPerFiveMin+1];
+		VF_approx = new VFApprox[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1];
 	}
 
 	public void initializeStates() {
@@ -41,7 +41,6 @@ public class FRSolver_sparseLR extends FRSolver {
 		try {
 			proxy = factory.getProxy();
 		} catch (MatlabConnectionException e) {
-			// TODO Auto-generated catch block
 			System.out.println("Error: MatlabProxyFactory connection");
 			e.printStackTrace();
 		}
@@ -49,7 +48,7 @@ public class FRSolver_sparseLR extends FRSolver {
 		// string input to call random_states.m function and find the sampled states
 		int RD_length = param.getGrange().length * param.getDrange().length;
 		String random_states_input = "random_states(" + param.getRrange().length + "," + RD_length + ",1,3,"
-				+ param.get_row_part() + "," + param.get_col_part() + ");";
+				+ param.getRowPart() + "," + param.getColPart() + ");";
 		try {
 			// CHANGE TO YOUR DIRECTORY
 			proxy.eval(cd_directory);
@@ -57,21 +56,21 @@ public class FRSolver_sparseLR extends FRSolver {
 			processor = new MatlabTypeConverter(proxy);
 			MatlabNumericArray sample_states = processor.getNumericArray("sample_states");
 			double[][] java_sample_states = sample_states.getRealArray2D();
-			sampled_states = java_sample_states;
-			sampStates = new FRState[sampled_states.length];
-			for (int i = 0; i < sampled_states.length; i++) {
-				int r = (int) sampled_states[i][0];
-				int g_d_idx = (int) sampled_states[i][1];
-				sampStates[i] = (FRState) ArrayOfStates[r * RD_length + g_d_idx];
-				sampStates[i].initialize(param);
+			sampleStatesCoord = java_sample_states;
+			sampledStates = new FRState[sampleStatesCoord.length];
+			for (int i = 0; i < sampleStatesCoord.length; i++) {
+				int r = (int) sampleStatesCoord[i][0];
+				int g_d_idx = (int) sampleStatesCoord[i][1];
+				sampledStates[i] = (FRState) ArrayOfStates[r * RD_length + g_d_idx];
+				sampledStates[i].initialize(param);
 			}
 		} catch (MatlabInvocationException e) {
 			System.out.println("Error: random_states.m initialization.");
 			e.printStackTrace();
 		}
-		System.out.println("Sample size: " + sampled_states.length);
-		sample_VF = new double[sampled_states.length][1];
-		VF_approx[Parameter.NoTwoSecPerFiveMin] = new VFApprox(param);
+		System.out.println("Sample size: " + sampleStatesCoord.length);
+		sampleVF = new double[sampleStatesCoord.length][1];
+		VF_approx[Parameter.NO_TWO_SEC_PER_FIVE_MIN] = new VFApprox(param);
 	}
 
 	public void closeMatlab() {
@@ -84,23 +83,23 @@ public class FRSolver_sparseLR extends FRSolver {
 
 	public void solveBDP() {
 		long start = System.currentTimeMillis();
-		for (int t = Parameter.NoTwoSecPerFiveMin - 1; t >= 0; t--) {
+		for (int t = Parameter.NO_TWO_SEC_PER_FIVE_MIN - 1; t >= 0; t--) {
 			VF_approx[t] = new VFApprox(param);
-			for (int i = 0; i < sampStates.length; i++) {
-				findMax(sampStates[i], t, i);
+			for (int i = 0; i < sampledStates.length; i++) {
+				findMax(sampledStates[i], t, i);
 			}
 			try {
-				processor.setNumericArray("sample_VF", new MatlabNumericArray(sample_VF, null));
-				String vf_approx_input = "svd_approx_partitionLS(sample_VF," + param.get_row_part() + ","
-						+ param.get_col_part() + "," + t + ");";
+				processor.setNumericArray("sampleVF", new MatlabNumericArray(sampleVF, null));
+				String vf_approx_input = "svd_approx_partitionLS(sampleVF," + param.getRowPart() + ","
+						+ param.getColPart() + "," + t + ");";
 
 				proxy.eval("[x_vec,y_vec,shift_vec] = " + vf_approx_input);
 				double[][][] x = processor.getNumericArray("x_vec").getRealArray3D();
 				double[][][] y = processor.getNumericArray("y_vec").getRealArray3D();
 				double[][] shift = processor.getNumericArray("shift_vec").getRealArray2D();
-				VF_approx[t].set_x_vector(x);
-				VF_approx[t].set_y_vector(y);
-				VF_approx[t].set_shift(shift);
+				VF_approx[t].setXVector(x);
+				VF_approx[t].setYVector(y);
+				VF_approx[t].setShift(shift);
 
 			} catch (MatlabInvocationException e) {
 				System.out.println("Error: svd_approx_partition.m");
@@ -134,7 +133,7 @@ public class FRSolver_sparseLR extends FRSolver {
 				}
 			}
 		}
-		sample_VF[sample_i][0] = max;
+		sampleVF[sample_i][0] = max;
 		state.setValueFunction(max, t);
 		state.setOptAction(maxIndex, t);
 	}
@@ -157,8 +156,8 @@ public class FRSolver_sparseLR extends FRSolver {
 		float sum = 0;
 		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length) + Gnext;
 		for (int j = 0; j < Dnext.length; j++) {
-			float Vnext = (float) VF_approx[t + 1].get_V_approx(Rnext, Gnext, Dnext[j]);
-			if (t + 1 == Parameter.NoTwoSecPerFiveMin)
+			float Vnext = (float) VF_approx[t + 1].getVApprox(Rnext, Gnext, Dnext[j]);
+			if (t + 1 == Parameter.NO_TWO_SEC_PER_FIVE_MIN)
 				Vnext = ArrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
 			sum += ProbNext[j] * Vnext;
 		}
@@ -173,11 +172,11 @@ public class FRSolver_sparseLR extends FRSolver {
 	 */
 	
 	public void setVFApprox(float[][] x_in, float[][] y_in, float[][] shift_in) {
-		for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
+		for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
 			VF_approx[i] = new VFApprox(param);
-			VF_approx[i].set_x_vector(x_in[i]);
-			VF_approx[i].set_y_vector(y_in[i]);
-			VF_approx[i].set_shift(shift_in[i]);
+			VF_approx[i].setXVector(x_in[i]);
+			VF_approx[i].setYVector(y_in[i]);
+			VF_approx[i].setShift(shift_in[i]);
 		}
 	}
 
@@ -188,22 +187,22 @@ public class FRSolver_sparseLR extends FRSolver {
 	public float[][] getVFApprox(int choice) {
 		float[][] output = null;
 		switch (choice) {
-		case x_svd:
-			output = new float[Parameter.NoTwoSecPerFiveMin+1][VF_approx[0].get_x_vector1d().length];
-			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
-				output[i] = VF_approx[i].get_x_vector1d();
+		case X_SVD:
+			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1][VF_approx[0].getXVector1D().length];
+			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
+				output[i] = VF_approx[i].getXVector1D();
 			}
 			break;
-		case y_svd:
-			output = new float[Parameter.NoTwoSecPerFiveMin+1][VF_approx[0].get_y_vector1d().length];
-			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
-				output[i] = VF_approx[i].get_y_vector1d();
+		case Y_SVD:
+			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1][VF_approx[0].getYVector1D().length];
+			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
+				output[i] = VF_approx[i].getYVector1D();
 			}
 			break;
-		case shift_mat:
-			output = new float[Parameter.NoTwoSecPerFiveMin+1][VF_approx[0].get_shift1d().length];
-			for (int i = 0; i < Parameter.NoTwoSecPerFiveMin+1; i++) {
-				output[i] = VF_approx[i].get_shift1d();
+		case SHIFT_MAT:
+			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1][VF_approx[0].getShift1D().length];
+			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
+				output[i] = VF_approx[i].getShift1D();
 			}
 			break;
 		}
@@ -214,9 +213,9 @@ public class FRSolver_sparseLR extends FRSolver {
 		String xfile = filePrefix + "_x.csv";
 		String yfile = filePrefix + "_y.csv";
 		String shiftfile = filePrefix + "_shift.csv";
-		FastIO.Write2DFloatArray(xfile, getVFApprox(FRSolver_sparseLR.x_svd));
-		FastIO.Write2DFloatArray(yfile, getVFApprox(FRSolver_sparseLR.y_svd));
-		FastIO.Write2DFloatArray(shiftfile, getVFApprox(FRSolver_sparseLR.shift_mat));
+		FastIO.write2DFloatArray(xfile, getVFApprox(FRSolver_sparseLR.X_SVD));
+		FastIO.write2DFloatArray(yfile, getVFApprox(FRSolver_sparseLR.Y_SVD));
+		FastIO.write2DFloatArray(shiftfile, getVFApprox(FRSolver_sparseLR.SHIFT_MAT));
 	}
 	
 	/**
@@ -232,7 +231,7 @@ public class FRSolver_sparseLR extends FRSolver {
 				for (int d = 0; d < param.getDrange().length; d++) {
 					for (int g = 0; g < param.getGrange().length; g++) {
 						for (int t = 0; t < horizon; t++) {
-							output[t][s] = (float) VF_approx[t].get_V_approx(r, g, d);
+							output[t][s] = (float) VF_approx[t].getVApprox(r, g, d);
 							s++;
 						}
 					}
