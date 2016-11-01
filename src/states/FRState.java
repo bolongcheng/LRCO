@@ -16,7 +16,7 @@ public class FRState extends State {
 	private int R; // R_t: resource
 	private int G; // G_t: perf score
 	private int D; // D_t: RegD signal
-	private static float[] action_space;
+	private static float[] actionSpace;
 
 	private float xE;
 	private float xG;
@@ -25,9 +25,9 @@ public class FRState extends State {
 	private int[] Rnext;
 	private int[] Gnext;
 	private int[] Dnext;
-	private float[] NextProb;
+	private float[] DnextProb;
 
-	private static float epislon = (float) 0.0001;
+	private static float EPSILON = (float) 0.0001;
 
 	public FRState(Parameter param_, int R_, int G_, int D_) {
 		R = R_;
@@ -35,18 +35,18 @@ public class FRState extends State {
 		D = D_;
 		xE = param_.getXE();
 		xG = param_.getXG();
-		action_space = param_.getDrange();
-		V = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
-		OptAction = new int[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
-		for (int i = 0; i < V.length; i++) {
-			V[i] = Float.NEGATIVE_INFINITY;
-			OptAction[i] = -1;
+		actionSpace = param_.getDrange();
+		valueFunction = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
+		optAction = new int[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
+		for (int i = 0; i < valueFunction.length; i++) {
+			valueFunction[i] = Float.NEGATIVE_INFINITY;
+			optAction[i] = -1;
 		}
 	}
 
 	public void initialize(Parameter param_) {
 		setFeasibleActions(param_);
-		setCurrCost(param_);
+		setCostFunction(param_);
 		setRnext(param_);
 		setGnext(param_);
 		setDnext(param_);
@@ -54,7 +54,7 @@ public class FRState extends State {
 
 	private void setDnext(Parameter param) {
 		Dnext = param.getDnext(D);
-		NextProb = param.getDnextProb(D);
+		DnextProb = param.getDnextProb(D);
 	}
 
 	/**
@@ -117,7 +117,7 @@ public class FRState extends State {
 				float Gdeg = Math.min(Math.abs(param.getDrange()[i] + param.getDrange()[D]) / param.getK(), 1);
 				if (XMag <= param.getBatteryParam()[Parameter.BETA_C]) {
 					if (Rnew >= Rmin && Rnew <= Rmax) {
-						if (Gdeg <= xG + epislon) {
+						if (Gdeg <= xG + EPSILON) {
 							feasibleActions.add(i);
 						}
 					}
@@ -130,7 +130,7 @@ public class FRState extends State {
 				float Gdeg = Math.min(Math.abs(param.getDrange()[i] + param.getDrange()[D]) / param.getK(), 1);
 				if (XMag <= param.getBatteryParam()[Parameter.BETA_C]) {
 					if (Rnew >= Rmin && Rnew <= Rmax) {
-						if (Gdeg <= xG + epislon) {
+						if (Gdeg <= xG + EPSILON) {
 							feasibleActions.add(i);
 						}
 					}
@@ -147,8 +147,8 @@ public class FRState extends State {
 	 * 
 	 * @param param
 	 */
-	private void setCurrCost(Parameter param) {
-		CurrCost = FRObjFun.getCurrCost(this, param);
+	private void setCostFunction(Parameter param) {
+		costFunction = FRObjFun.getCurrCost(this, param);
 	}
 
 //	public List<Integer> getFeasibleActions() {
@@ -195,18 +195,18 @@ public class FRState extends State {
 		return Dnext;
 	}
 
-	public float[] getNextProb() {
-		return NextProb;
+	public float[] getDnextProb() {
+		return DnextProb;
 	}
 
 	public int getOptActionString(int t) {
-		return feasibleActions.get(OptAction[t]);
+		return feasibleActions.get(optAction[t]);
 	}
 	
 	//returns true if i is closer to the signal than the maxIndex
 	public boolean getTieBreak(int i, int maxIndex) {
-		return (Math.abs(action_space[getFeasibleActions().get(i)] + action_space[D]) < Math
-				.abs(action_space[getFeasibleActions().get(maxIndex)] + action_space[D]));
+		return (Math.abs(actionSpace[getFeasibleActions().get(i)] + actionSpace[D]) < Math
+				.abs(actionSpace[getFeasibleActions().get(maxIndex)] + actionSpace[D]));
 	}
 
 }

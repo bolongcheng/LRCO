@@ -9,14 +9,13 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 
 /**
- * The Parameter class handles the input parameters. The input csv file is formatted in the
- * following order:
- * 
- * Delta t, K, R_max, beta^c, beta^d, L^u, L^l, eta^c, eta^d R_size, G_size, D_size, P^E_size R_max,
- * G_min, D_max, P^E_max R_min, G_max, D_min, P^E_min P^E, P^D, x^G, X^E
+ * The Parameter class handles the input parameters. The base parameter requires two inputs a static
+ * parameter file for characterizing the battery and a state space parameter file for describing the
+ * state space. Transition function/probability is also handled by the parameter class. Most input
+ * files are assumed to be in the .csv format
  * 
  * @author bcheng
- * @date 10/26
+ * @date 10/31/16
  *
  */
 public class Parameter {
@@ -64,13 +63,11 @@ public class Parameter {
 	private float[] Drange;
 	private float[] PErange;
 	private float[] PDrange;
-	
+
 	private float[] XGrange;
 	private float[][] RTPrice;
 	private float[][] fmProb;
-	private float[][] price_prob;
-
-	private float[][] PDRTnextprob;
+	private float[][] priceProb;
 
 	private List<int[]> Dnext;
 	private List<float[]> DnextProb;
@@ -80,9 +77,9 @@ public class Parameter {
 
 	public Parameter() {
 		batteryParam = new float[ETA_D + 1];
-		stateSize = new int[PD_index+1];
-		stateMin = new float[PD_index+1];
-		stateMax = new float[PD_index+1];
+		stateSize = new int[PD_index + 1];
+		stateMin = new float[PD_index + 1];
+		stateMax = new float[PD_index + 1];
 	}
 
 	public void readStaticParameters(String filename) {
@@ -104,7 +101,7 @@ public class Parameter {
 				} else if (input[0].equalsIgnoreCase("eta_c")) {
 					batteryParam[ETA_C] = Float.parseFloat(input[1]);
 				} else if (input[0].equalsIgnoreCase("eta_d")) {
-					batteryParam[ETA_C] = Float.parseFloat(input[1]);
+					batteryParam[ETA_D] = Float.parseFloat(input[1]);
 				} else if (input[0].equalsIgnoreCase("L_u")) {
 					batteryParam[L_U] = Float.parseFloat(input[1]);
 				} else if (input[0].equalsIgnoreCase("L_l")) {
@@ -117,7 +114,7 @@ public class Parameter {
 					x_G = Float.parseFloat(input[1]);
 				} else if (input[0].equalsIgnoreCase("x_e")) {
 					x_E = Float.parseFloat(input[1]);
-				} 
+				}
 			}
 		} catch (FileNotFoundException fnfe) {
 			fnfe.printStackTrace();
@@ -133,8 +130,10 @@ public class Parameter {
 			}
 		}
 	}
+
 	/**
 	 * This function reads in the state space file and edits the state space
+	 * 
 	 * @param filename
 	 */
 	public void readStateSpace(String filename) {
@@ -150,7 +149,7 @@ public class Parameter {
 				} else if (input[0].equalsIgnoreCase("rmin")) {
 					stateMin[R_index] = Float.parseFloat(input[1]);
 				} else if (input[0].equalsIgnoreCase("gmax")) {
-					//NOTE: G is reverse indexed
+					// NOTE: G is reverse indexed
 					stateMin[G_index] = Float.parseFloat(input[1]);
 				} else if (input[0].equalsIgnoreCase("gmin")) {
 					stateMax[G_index] = Float.parseFloat(input[1]);
@@ -176,14 +175,14 @@ public class Parameter {
 					stateSize[PE_index] = Integer.parseInt(input[1]);
 				} else if (input[0].equalsIgnoreCase("dsize")) {
 					stateSize[D_index] = Integer.parseInt(input[1]);
-				} 
-//				else if (input[0].equalsIgnoreCase("xgmax")) {
-//					BatteryParam[L_L] = Float.parseFloat(input[1]);
-//				} else if (input[0].equalsIgnoreCase("xgmin")) {
-//					BatteryParam[L_L] = Float.parseFloat(input[1]);
-//				} else if (input[0].equalsIgnoreCase("xgsize")) {
-//					BatteryParam[L_L] = Float.parseFloat(input[1]);
-//				}
+				}
+				// else if (input[0].equalsIgnoreCase("xgmax")) {
+				// BatteryParam[L_L] = Float.parseFloat(input[1]);
+				// } else if (input[0].equalsIgnoreCase("xgmin")) {
+				// BatteryParam[L_L] = Float.parseFloat(input[1]);
+				// } else if (input[0].equalsIgnoreCase("xgsize")) {
+				// BatteryParam[L_L] = Float.parseFloat(input[1]);
+				// }
 			}
 		} catch (
 
@@ -200,7 +199,7 @@ public class Parameter {
 				}
 			}
 		}
-		
+
 		Rrange = new float[stateSize[R_index] + 1];
 		Grange = new float[stateSize[G_index] + 1];
 		Drange = new float[stateSize[D_index] + 1];
@@ -222,8 +221,8 @@ public class Parameter {
 		diff = (stateMax[PD_index] - stateMin[PD_index]) / stateSize[PD_index];
 		for (int i = 0; i < PDrange.length; i++)
 			PDrange[i] = diff * i + stateMin[PD_index];
-		
-		//TODO needs clean up.
+
+		// TODO needs clean up.
 		XGrange = new float[3];
 		for (int i = 0; i < XGrange.length; i++) {
 			XGrange[i] = (stateMin[G_index] - stateMax[G_index]) / (XGrange.length - 1) * i + stateMax[G_index];
@@ -325,10 +324,6 @@ public class Parameter {
 		return PDrange;
 	}
 
-	public float[][] getPDRTnextprob() {
-		return PDRTnextprob;
-	}
-
 	public float[][] getFmProb() {
 		return fmProb;
 	}
@@ -338,11 +333,11 @@ public class Parameter {
 	}
 
 	public float[][] getPriceProb() {
-		return price_prob;
+		return priceProb;
 	}
 
-	public void setPriceProb(float[][] price_prob) {
-		this.price_prob = price_prob;
+	public void setPriceProb(float[][] priceProb) {
+		this.priceProb = priceProb;
 	}
 
 	public void setPErange(float[] pErange) {
@@ -353,28 +348,28 @@ public class Parameter {
 		PDrange = pDrange;
 	}
 
-	public void setDnext(float[][] trans_prob) {
+	public void setDnext(float[][] transProb) {
 		Dnext = new ArrayList<int[]>();
 		DnextProb = new ArrayList<float[]>();
-		for (int i = 0; i < trans_prob.length; i++) {
+		for (int i = 0; i < transProb.length; i++) {
 			int count = 0;
-			for (int j = 0; j < trans_prob[i].length; j++) {
-				if (trans_prob[i][j] != 0) {
+			for (int j = 0; j < transProb[i].length; j++) {
+				if (transProb[i][j] != 0) {
 					count++;
 				}
 			}
 			int[] temp = new int[count];
-			float[] temp_prob = new float[count];
+			float[] tempProb = new float[count];
 			count = 0;
-			for (int j = 0; j < trans_prob[i].length; j++) {
-				if (trans_prob[i][j] != 0) {
+			for (int j = 0; j < transProb[i].length; j++) {
+				if (transProb[i][j] != 0) {
 					temp[count] = j;
-					temp_prob[count] = trans_prob[i][j];
+					tempProb[count] = transProb[i][j];
 					count++;
 				}
 			}
 			Dnext.add(temp);
-			DnextProb.add(temp_prob);
+			DnextProb.add(tempProb);
 		}
 	}
 

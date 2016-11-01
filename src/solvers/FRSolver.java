@@ -12,8 +12,8 @@ public class FRSolver extends Solver {
 
 	public FRSolver(Parameter param_) {
 		param = param_;
-		NumOfStates = param.getRrange().length * param.getGrange().length * param.getDrange().length;
-		ArrayOfStates = new FRState[NumOfStates];
+		numOfStates = param.getRrange().length * param.getGrange().length * param.getDrange().length;
+		arrayOfStates = new FRState[numOfStates];
 	}
 
 	/**
@@ -31,40 +31,40 @@ public class FRSolver extends Solver {
 		int Rnext = ((FRState) state).getRnext(actionIndex);
 		int Gnext = ((FRState) state).getGnext(actionIndex);
 		int[] Dnext = ((FRState) state).getDnext();
-		float[] ProbNext = ((FRState) state).getNextProb();
+		float[] ProbNext = ((FRState) state).getDnextProb();
 		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length) + Gnext;
 		float sum = 0;
 		for (int j = 0; j < Dnext.length; j++) {
-			float Vnext = ArrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
+			float Vnext = arrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
 			sum += ProbNext[j] * Vnext;
 		}
 		return sum;
 	}
 
-	public void populateStates(float[][] terminal_value_function) {
+	public void populateStates(float[][] terminalValueFunction) {
 		System.out.println("================================");
 		System.out.println("FREQ REGULATION SOLVER");
 		Date now = new Date();
 		SimpleDateFormat ft = new SimpleDateFormat("hh:mm:ss");
 		System.out.println("BEGIN INIT: " + ft.format(now));
-		float[][] Truterminal_value_function = new float[param.getRrange().length][param.getGrange().length];
-		if (terminal_value_function != null) {
+		float[][] extraTerminalValueFunction = new float[param.getRrange().length][param.getGrange().length];
+		if (terminalValueFunction != null) {
 			// Check Dimension First
-			if (terminal_value_function.length != param.getRrange().length
-					|| terminal_value_function[0].length != param.getGrange().length)
-				Truterminal_value_function = DiscreteHelpers.interpolate(terminal_value_function,
+			if (terminalValueFunction.length != param.getRrange().length
+					|| terminalValueFunction[0].length != param.getGrange().length)
+				extraTerminalValueFunction = DiscreteHelpers.interpolate(terminalValueFunction,
 						param.getRrange().length, param.getGrange().length);
 		}
 
 		int s = 0;
-		if (terminal_value_function == null) {
+		if (terminalValueFunction == null) {
 			for (int r = 0; r < param.getRrange().length; r++) {
 				for (int d = 0; d < param.getDrange().length; d++) {
 					for (int g = 0; g < param.getGrange().length; g++) {
 						FRState newState = new FRState(param, r, g, d);
 						newState.setValueFunction(param.getK() * param.getPD() * param.getGrange()[g]
 								* (param.getGrange()[g] >= 0.4 ? 1 : 0), Parameter.NO_TWO_SEC_PER_FIVE_MIN);
-						ArrayOfStates[s] = newState;
+						arrayOfStates[s] = newState;
 						s++;
 					}
 				}
@@ -74,8 +74,8 @@ public class FRSolver extends Solver {
 				for (int d = 0; d < param.getDrange().length; d++) {
 					for (int g = 0; g < param.getGrange().length; g++) {
 						FRState newState = new FRState(param, r, g, d);
-						newState.setValueFunction(Truterminal_value_function[r][g], Parameter.NO_TWO_SEC_PER_FIVE_MIN);
-						ArrayOfStates[s] = newState;
+						newState.setValueFunction(extraTerminalValueFunction[r][g], Parameter.NO_TWO_SEC_PER_FIVE_MIN);
+						arrayOfStates[s] = newState;
 						s++;
 					}
 				}
@@ -84,7 +84,7 @@ public class FRSolver extends Solver {
 		now = new Date();
 		System.out.println("FINISH INIT: " + ft.format(now));
 		System.out.println("================================");
-		System.out.println("State size/Time: " + NumOfStates);
+		System.out.println("State size/Time: " + numOfStates);
 		System.out.println("================================");
 
 	}

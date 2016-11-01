@@ -25,8 +25,8 @@ public class EBSolver extends Solver {
 	 */
 	public EBSolver(Parameter param_) {
 		param = param_;
-		NumOfStates = param.getRrange().length * param.getGrange().length * param.getPErange().length;
-		ArrayOfStates = new EBState[NumOfStates];
+		numOfStates = param.getRrange().length * param.getGrange().length * param.getPErange().length;
+		arrayOfStates = new EBState[numOfStates];
 	}
 
 	/**
@@ -36,15 +36,17 @@ public class EBSolver extends Solver {
 		float value = 0;
 		int i = 0;
 		// intra-hour transition, PD fixed, PE changes
-		int GPE_length = param.getGrange().length * param.getPErange().length;
+		int GPELength = param.getGrange().length * param.getPErange().length;
 		EBState[] nextstates;
 		float[] prob;
 		if (t == Parameter.NO_FIVE_MIN_PER_HR - 1) {
 			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length];
 			prob = new float[nextstates.length];
 			for (int rg = 0; rg < nextstates.length; rg++) {
-				nextstates[rg] = (EBState) ArrayOfStates[((EBState) state).getRGnextStates(actionIndex)[rg][0]
-						* GPE_length + ((EBState) state).getRGnextStates(actionIndex)[rg][1] * param.getPErange().length
+				nextstates[rg] = (EBState) arrayOfStates[((EBState) state)
+						.getRGnextStates(actionIndex)[rg][EBState.R_INDEX] * GPELength
+						+ ((EBState) state).getRGnextStates(actionIndex)[rg][EBState.G_INDEX]
+								* param.getPErange().length
 						+ ((EBState) state).getPE()];
 				prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg];
 			}
@@ -55,9 +57,10 @@ public class EBSolver extends Solver {
 			for (int pe = 0; pe < param.getPErange().length; pe++) {
 				if (param.getFmProb()[pe][t + 1] > 0.000001) {
 					for (int rg = 0; rg < ((EBState) state).getRGnextProbs(actionIndex).length; rg++) {
-						nextstates[i] = (EBState) ArrayOfStates[((EBState) state).getRGnextStates(actionIndex)[rg][0]
-								* GPE_length
-								+ ((EBState) state).getRGnextStates(actionIndex)[rg][1] * param.getPErange().length
+						nextstates[i] = (EBState) arrayOfStates[((EBState) state)
+								.getRGnextStates(actionIndex)[rg][EBState.R_INDEX] * GPELength
+								+ ((EBState) state).getRGnextStates(actionIndex)[rg][EBState.G_INDEX]
+										* param.getPErange().length
 								+ pe];
 						prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg] * param.getFmProb()[pe][t + 1];
 						i++;
@@ -75,7 +78,7 @@ public class EBSolver extends Solver {
 
 	}
 
-	public void populateStates(float[][] ValueFunction) {
+	public void populateStates(float[][] valueFunction) {
 		System.out.println("================================");
 		System.out.println("ECO BASEPOINT SOLVER w/ TERMINAL VF");
 		Date now = new Date();
@@ -83,23 +86,36 @@ public class EBSolver extends Solver {
 		System.out.println("BEGIN INIT: " + ft.format(now));
 
 		int s = 0;
-		for (int r = 0; r < param.getRrange().length; r++) {
-			for (int g = 0; g < param.getGrange().length; g++) {
-				for (int pe = 0; pe < param.getPErange().length; pe++) {
-					EBState newState = new EBState(param, r, g, pe);
-					// set all V_t^1 = 0, for all t;
-					newState.setValueFunction(
-							param.getK() * param.getPD() * param.getGrange()[g] * (param.getGrange()[g] >= 0.4 ? 1 : 0),
-							Parameter.NO_FIVE_MIN_PER_HR);
-					ArrayOfStates[s] = newState;
-					s++;
+		if (valueFunction != null) {
+			for (int r = 0; r < param.getRrange().length; r++) {
+				for (int g = 0; g < param.getGrange().length; g++) {
+					for (int pe = 0; pe < param.getPErange().length; pe++) {
+						EBState newState = new EBState(param, r, g, pe);
+						// set all V_t^1 = 0, for all t;
+						newState.setValueFunction(valueFunction[r][pe], Parameter.NO_FIVE_MIN_PER_HR);
+						arrayOfStates[s] = newState;
+						s++;
+					}
+				}
+			}
+		} else {
+			for (int r = 0; r < param.getRrange().length; r++) {
+				for (int g = 0; g < param.getGrange().length; g++) {
+					for (int pe = 0; pe < param.getPErange().length; pe++) {
+						EBState newState = new EBState(param, r, g, pe);
+						// set all V_t^1 = 0, for all t;
+						newState.setValueFunction(param.getK() * param.getPD() * param.getGrange()[g]
+								* (param.getGrange()[g] >= 0.4 ? 1 : 0), Parameter.NO_FIVE_MIN_PER_HR);
+						arrayOfStates[s] = newState;
+						s++;
+					}
 				}
 			}
 		}
 		now = new Date();
 		System.out.println("FINISH INIT: " + ft.format(now));
 		System.out.println("================================");
-		System.out.println("State size/Step: " + NumOfStates);
+		System.out.println("State size/Step: " + numOfStates);
 		System.out.println("================================");
 	}
 

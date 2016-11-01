@@ -31,7 +31,7 @@ public class FRSolver_sparseLR extends FRSolver {
 
 	public FRSolver_sparseLR(Parameter param_) {
 		super(param_);
-		VF_approx = new VFApprox[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1];
+		VF_approx = new VFApprox[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
 	}
 
 	public void initializeStates() {
@@ -61,7 +61,7 @@ public class FRSolver_sparseLR extends FRSolver {
 			for (int i = 0; i < sampleStatesCoord.length; i++) {
 				int r = (int) sampleStatesCoord[i][0];
 				int g_d_idx = (int) sampleStatesCoord[i][1];
-				sampledStates[i] = (FRState) ArrayOfStates[r * RD_length + g_d_idx];
+				sampledStates[i] = (FRState) arrayOfStates[r * RD_length + g_d_idx];
 				sampledStates[i].initialize(param);
 			}
 		} catch (MatlabInvocationException e) {
@@ -122,7 +122,7 @@ public class FRSolver_sparseLR extends FRSolver {
 		float max = Float.NEGATIVE_INFINITY;
 		int maxIndex = -1;
 		for (int i = 0; i < state.getFeasibleActions().size(); i++) {
-			float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
+			float cost = state.getCostFunction(i) + findNextStateExpectValue(state, i, t);
 			if (cost > max) {
 				max = cost;
 				maxIndex = i;
@@ -152,27 +152,28 @@ public class FRSolver_sparseLR extends FRSolver {
 		int Rnext = ((FRState) state).getRnext(i);
 		int Gnext = ((FRState) state).getGnext(i);
 		int[] Dnext = ((FRState) state).getDnext();
-		float[] ProbNext = ((FRState) state).getNextProb();
+		float[] ProbNext = ((FRState) state).getDnextProb();
 		float sum = 0;
 		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length) + Gnext;
 		for (int j = 0; j < Dnext.length; j++) {
 			float Vnext = (float) VF_approx[t + 1].getVApprox(Rnext, Gnext, Dnext[j]);
 			if (t + 1 == Parameter.NO_TWO_SEC_PER_FIVE_MIN)
-				Vnext = ArrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
+				Vnext = arrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
 			sum += ProbNext[j] * Vnext;
 		}
 		return sum;
 	}
-	
+
 	/**
-	 *  TODO: should this be kept here?
+	 * TODO: should this be kept here?
+	 * 
 	 * @param x_in
 	 * @param y_in
 	 * @param shift_in
 	 */
-	
+
 	public void setVFApprox(float[][] x_in, float[][] y_in, float[][] shift_in) {
-		for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
+		for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1; i++) {
 			VF_approx[i] = new VFApprox(param);
 			VF_approx[i].setXVector(x_in[i]);
 			VF_approx[i].setYVector(y_in[i]);
@@ -188,20 +189,20 @@ public class FRSolver_sparseLR extends FRSolver {
 		float[][] output = null;
 		switch (choice) {
 		case X_SVD:
-			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1][VF_approx[0].getXVector1D().length];
-			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
+			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1][VF_approx[0].getXVector1D().length];
+			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1; i++) {
 				output[i] = VF_approx[i].getXVector1D();
 			}
 			break;
 		case Y_SVD:
-			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1][VF_approx[0].getYVector1D().length];
-			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
+			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1][VF_approx[0].getYVector1D().length];
+			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1; i++) {
 				output[i] = VF_approx[i].getYVector1D();
 			}
 			break;
 		case SHIFT_MAT:
-			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN+1][VF_approx[0].getShift1D().length];
-			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN+1; i++) {
+			output = new float[Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1][VF_approx[0].getShift1D().length];
+			for (int i = 0; i < Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1; i++) {
 				output[i] = VF_approx[i].getShift1D();
 			}
 			break;
@@ -217,16 +218,16 @@ public class FRSolver_sparseLR extends FRSolver {
 		FastIO.write2DFloatArray(yfile, getVFApprox(FRSolver_sparseLR.Y_SVD));
 		FastIO.write2DFloatArray(shiftfile, getVFApprox(FRSolver_sparseLR.SHIFT_MAT));
 	}
-	
+
 	/**
 	 * TODO: needs to be changed
 	 */
 
 	public float[][] getValueFunction(int choice, int horizon) {
-		float[][] output = new float[horizon][NumOfStates];
+		float[][] output = new float[horizon][numOfStates];
 		int s = 0;
 		switch (choice) {
-		case ValueFunction:
+		case VALUE_FUNCTION:
 			for (int r = 0; r < param.getRrange().length; r++) {
 				for (int d = 0; d < param.getDrange().length; d++) {
 					for (int g = 0; g < param.getGrange().length; g++) {
@@ -238,12 +239,12 @@ public class FRSolver_sparseLR extends FRSolver {
 				}
 			}
 			break;
-		case OptiAction:
-//			for (int s = 0; s < NumOfStates; s++) {
-//				for (int t = 0; t < horizon; t++) {
-//					output[t][s] = ArrayOfStates[s].getOptAction(t);
-//				}
-//			}
+		case OPTI_ACTION:
+			// for (int s = 0; s < NumOfStates; s++) {
+			// for (int t = 0; t < horizon; t++) {
+			// output[t][s] = ArrayOfStates[s].getOptAction(t);
+			// }
+			// }
 			break;
 		}
 		return output;

@@ -33,7 +33,7 @@ public class FRSimulator extends Simulator {
 		System.out.println("================================");
 		System.out.println("SIMULATE RegD: " + numTrial + " TRIALS.");
 		System.out.println("================================");
-		int DG_length = (param.getGrange().length * param.getDrange().length);
+		int DGLength = (param.getGrange().length * param.getDrange().length);
 		// Simulating the entire trajectories.
 		for (int i = 0; i < numTrial; i++) {
 			// we always start with half-full capacity and full perf score.
@@ -45,12 +45,12 @@ public class FRSimulator extends Simulator {
 				path[i][DPath][j] = param.getDrange()[RegDPaths[i][j]];
 
 				FRState tempState = (FRState) solver
-						.getState(R * DG_length + RegDPaths[i][j] * param.getGrange().length + G);
+						.getState(R * DGLength + RegDPaths[i][j] * param.getGrange().length + G);
 				tempState.initialize(param);
 				if (tempState.getOptAction(j) == -1) {
 					solver.findMax(tempState, j);
 				}
-				path[i][CostPath][j] = tempState.getCurrCost(tempState.getOptAction(j));
+				path[i][CostPath][j] = tempState.getCostFunction(tempState.getOptAction(j));
 				path[i][XDPath][j] = param.getDrange()[tempState.getOptActionString(j)];
 				G = tempState.getGnext(tempState.getOptAction(j));
 				R = tempState.getRnext(tempState.getOptAction(j));

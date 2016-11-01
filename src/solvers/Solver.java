@@ -5,21 +5,21 @@ import utilities.Parameter;
 
 public abstract class Solver {
 	protected Parameter param;
-	protected State[] ArrayOfStates;
-	protected int NumOfStates;
+	protected State[] arrayOfStates;
+	protected int numOfStates;
 
-	public static final int ValueFunction = 1;
-	public static final int OptiAction = 2;
+	public static final int VALUE_FUNCTION = 1;
+	public static final int OPTI_ACTION = 2;
 
 	public int getNumOfStates() {
-		return NumOfStates;
+		return numOfStates;
 	}
 
 	public void solveBDP() {
 		long start = System.currentTimeMillis();
-		for (int t = ArrayOfStates[0].getValueFunction().length - 2; t >= 0; t--) {
-			for (int s = 0; s < ArrayOfStates.length; s++) {
-				findMax(ArrayOfStates[s], t);
+		for (int t = arrayOfStates[0].getValueFunction().length - 2; t >= 0; t--) {
+			for (int s = 0; s < arrayOfStates.length; s++) {
+				findMax(arrayOfStates[s], t);
 			}
 			long end = System.currentTimeMillis();
 			System.out.println("STEP: " + t + " elpased: " + (end - start) + "ms");
@@ -40,7 +40,7 @@ public abstract class Solver {
 		float max = Float.NEGATIVE_INFINITY;
 		int maxIndex = -1;
 		for (int i = 0; i < state.getFeasibleActions().size(); i++) {
-			 float cost = state.getCurrCost(i) + findNextStateExpectValue(state, i, t);
+			 float cost = state.getCostFunction(i) + findNextStateExpectValue(state, i, t);
 			if (cost > max) {
 				max = cost;
 				maxIndex = i;
@@ -62,8 +62,8 @@ public abstract class Solver {
 	}
 	
 	public void initializeStates(){
-			for (int s = 0; s < NumOfStates; s++) {
-				ArrayOfStates[s].initialize(param);
+			for (int s = 0; s < numOfStates; s++) {
+				arrayOfStates[s].initialize(param);
 		}
 	}
 
@@ -80,20 +80,20 @@ public abstract class Solver {
 	 */
 
 	public float[][] getValueFunction(int choice, int horizon) {
-		float[][] output = new float[horizon][NumOfStates];
+		float[][] output = new float[horizon][numOfStates];
 		switch (choice) {
-		case ValueFunction:
-			for (int s = 0; s < NumOfStates; s++) {
+		case VALUE_FUNCTION:
+			for (int s = 0; s < numOfStates; s++) {
 				for (int t = 0; t < horizon; t++) {
-					output[t][s] = ArrayOfStates[s].getValueFunction(t);
+					output[t][s] = arrayOfStates[s].getValueFunction(t);
 				}
 			}
 
 			break;
-		case OptiAction:
-			for (int s = 0; s < NumOfStates; s++) {
+		case OPTI_ACTION:
+			for (int s = 0; s < numOfStates; s++) {
 				for (int t = 0; t < horizon; t++) {
-					output[t][s] = ArrayOfStates[s].getOptAction(t);
+					output[t][s] = arrayOfStates[s].getOptAction(t);
 				}
 			}
 			break;
@@ -113,17 +113,17 @@ public abstract class Solver {
 
 	public void setValueFunction(float[][] VF, int choice) {
 		switch (choice) {
-		case ValueFunction:
-			for (int s = 0; s < NumOfStates; s++) {
+		case VALUE_FUNCTION:
+			for (int s = 0; s < numOfStates; s++) {
 				for (int t = 0; t < VF.length; t++) {
-					ArrayOfStates[s].setValueFunction(VF[t][s], t);
+					arrayOfStates[s].setValueFunction(VF[t][s], t);
 				}
 			}
 			break;
-		case OptiAction:
-			for (int s = 0; s < NumOfStates; s++) {
+		case OPTI_ACTION:
+			for (int s = 0; s < numOfStates; s++) {
 				for (int t = 0; t < VF.length; t++) {
-					ArrayOfStates[s].setOptAction((int) VF[s][t], t);
+					arrayOfStates[s].setOptAction((int) VF[s][t], t);
 				}
 			}
 			break;
@@ -131,6 +131,6 @@ public abstract class Solver {
 	}
 
 	public State getState(int s) {
-		return ArrayOfStates[s];
+		return arrayOfStates[s];
 	}
 }
