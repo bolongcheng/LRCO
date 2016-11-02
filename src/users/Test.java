@@ -23,7 +23,6 @@ public class Test {
 		Parameter param = new Parameter();
 		param.readStaticParameters(dirName + File.separator + "Input" + File.separator + "static_param.csv");
 		param.readStateSpace(dirName + File.separator + "Input" + File.separator + "eb_test" + numTest + ".csv");
-		System.out.println(param.getBatteryParam()[Parameter.ETA_D]);
 		String RGprob = dirName + File.separator + "Input" + File.separator + "RGprob.csv";
 		String RGstate = dirName + File.separator + "Input" + File.separator + "RGstates.csv";
 		String RGindex = dirName + File.separator + "Input" + File.separator + "RGindex.csv";

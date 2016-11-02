@@ -79,7 +79,8 @@ public abstract class Solver {
 	 * @return 2D float array of the value function of dimension T x |S|
 	 */
 
-	public float[][] getValueFunction(int choice, int horizon) {
+	public float[][] getValueFunction(int choice) {
+		int horizon = arrayOfStates[0].getValueFunction().length;
 		float[][] output = new float[horizon][numOfStates];
 		switch (choice) {
 		case VALUE_FUNCTION:
