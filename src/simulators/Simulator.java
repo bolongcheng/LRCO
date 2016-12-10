@@ -9,11 +9,11 @@ public abstract class Simulator {
 	protected float[][][] path;
 	protected int numTrial;
 
-	public void LoadSolver(Solver solver_) {
+	public void loadSolver(Solver solver_) {
 		solver = solver_;
 	}
 
-	public abstract void RunSimulation();
+	public abstract void runSimulation();
 
 	public float[][][] getPath() {
 		return path;

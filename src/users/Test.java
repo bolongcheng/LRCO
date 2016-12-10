@@ -48,10 +48,10 @@ public class Test {
 		float[][] lmp = CSVIO.read2DFloatArray(lmpFile, num_trial, Parameter.NO_FIVE_MIN_PER_HR);
 		int[][] lmpClusters = CSVIO.read2DIntArray(lmpClustFile, num_trial, Parameter.NO_FIVE_MIN_PER_HR);
 		EBSimulator sim = new EBSimulator(param, num_trial);
-		sim.LoadSolver(solve);
+		sim.loadSolver(solve);
 		sim.setLMP(lmp);
 		sim.setLMPClusters(lmpClusters);
-		sim.RunSimulation();
+		sim.runSimulation();
 		CSVIO.write2DFloatArray(dirName + File.separator + "Output" + File.separator + "EBSim.csv",
 				IOHelpers.convert3Dto2D(sim.getPath()));
 

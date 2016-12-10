@@ -26,7 +26,7 @@ public class FRSimulator extends Simulator {
 		}
 	}
 
-	public void RunSimulation() {
+	public void runSimulation() {
 		path = new float[numTrial][5][Parameter.NO_TWO_SEC_PER_FIVE_MIN + 1];
 		int R = 0;
 		int G = 0;

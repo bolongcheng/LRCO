@@ -48,34 +48,50 @@ public class EBSolver extends Solver {
 						+ ((EBState) state).getRGnextStates(actionIndex)[rg][EBState.G_INDEX]
 								* param.getPErange().length
 						+ ((EBState) state).getPE()];
-				prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg];
+				prob[rg] = ((EBState) state).getRGnextProbs(actionIndex)[rg];
 			}
 		} else {
 			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length * param.getPErange().length];
 			prob = new float[nextstates.length];
 			i = 0;
 			for (int pe = 0; pe < param.getPErange().length; pe++) {
-				if (param.getFmProb()[pe][t + 1] > 0.000001) {
+				if (param.getFmProb()[pe][t+1] > 0.000001) {
 					for (int rg = 0; rg < ((EBState) state).getRGnextProbs(actionIndex).length; rg++) {
 						nextstates[i] = (EBState) arrayOfStates[((EBState) state)
 								.getRGnextStates(actionIndex)[rg][EBState.R_INDEX] * GPELength
 								+ ((EBState) state).getRGnextStates(actionIndex)[rg][EBState.G_INDEX]
 										* param.getPErange().length
 								+ pe];
-						prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg] * param.getFmProb()[pe][t + 1];
+						prob[i] = ((EBState) state).getRGnextProbs(actionIndex)[rg] * param.getFmProb()[pe][t+1];
 						i++;
 					}
 				}
 			}
 		}
-
 		for (i = 0; i < nextstates.length; i++) {
 			if (nextstates[i] != null)
 				value += prob[i] * nextstates[i].getValueFunction(t + 1);
 		}
-
 		return value;
+	}
 
+	/**
+	 * Returns the value function V_t at time t for a specific price level PE, and G up to GLast
+	 * 
+	 * @param PE
+	 * @param t
+	 * @param GLast
+	 * @return
+	 */
+	public float[][] getPartialValueFunction(int PE, int t, int GLast) {
+		int GPELength = param.getGrange().length * param.getPErange().length;
+		float[][] output = new float[param.getRrange().length][GLast];
+		for (int r = 0; r < param.getRrange().length; r++) {
+			for (int g = 0; g < GLast; g++) {
+				output[r][g] = arrayOfStates[r * GPELength + g * param.getPErange().length + PE].getValueFunction(t);
+			}
+		}
+		return output;
 	}
 
 	public void populateStates(float[][] valueFunction) {
@@ -89,10 +105,11 @@ public class EBSolver extends Solver {
 		if (valueFunction != null) {
 			for (int r = 0; r < param.getRrange().length; r++) {
 				for (int g = 0; g < param.getGrange().length; g++) {
+					float GPenalty = param.getPD() * param.getK() * param.getGrange()[g]
+							* (param.getGrange()[g] >= 0.4 ? 1 : 0);
 					for (int pe = 0; pe < param.getPErange().length; pe++) {
 						EBState newState = new EBState(param, r, g, pe);
-						// set all V_t^1 = 0, for all t;
-						newState.setValueFunction(valueFunction[r][pe], Parameter.NO_FIVE_MIN_PER_HR);
+						newState.setValueFunction(valueFunction[r][pe] + GPenalty, Parameter.NO_FIVE_MIN_PER_HR);
 						arrayOfStates[s] = newState;
 						s++;
 					}
@@ -101,11 +118,11 @@ public class EBSolver extends Solver {
 		} else {
 			for (int r = 0; r < param.getRrange().length; r++) {
 				for (int g = 0; g < param.getGrange().length; g++) {
+					float GPenalty = param.getPD() * param.getK() * param.getGrange()[g]
+							* (param.getGrange()[g] >= 0.4 ? 1 : 0);
 					for (int pe = 0; pe < param.getPErange().length; pe++) {
 						EBState newState = new EBState(param, r, g, pe);
-						// set all V_t^1 = 0, for all t;
-						newState.setValueFunction(param.getK() * param.getPD() * param.getGrange()[g]
-								* (param.getGrange()[g] >= 0.4 ? 1 : 0), Parameter.NO_FIVE_MIN_PER_HR);
+						newState.setValueFunction(GPenalty, Parameter.NO_FIVE_MIN_PER_HR);
 						arrayOfStates[s] = newState;
 						s++;
 					}

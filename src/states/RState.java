@@ -6,13 +6,9 @@ import utilities.DiscreteHelpers;
 import utilities.Parameter;
 
 public class RState extends State {
-
 	private int R; // R_t: resource
 	private int PE;// P^E_t: 5 min LMP
-
 	private int[] Rnext;
-	private int[] PEnext;
-	private float[][] PEnextprob;
 
 	public RState(Parameter param_, int R_, int PE_) {
 		R = R_;

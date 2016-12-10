@@ -1,11 +1,11 @@
 package utilities;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 public class DiscreteHelpers {
 	/**
-	 * Return the index of an element of the array. Use the floor operation for
-	 * approximate values.
+	 * Return the index of an element of the array. Use the floor operation for approximate values.
 	 * 
 	 * @param value
 	 * @param array
@@ -28,7 +28,7 @@ public class DiscreteHelpers {
 		while (i < array.length && array[i] >= value + smallDiff)
 			i++;
 		return i > 0 ? i - 1 : 0;
-	
+
 	}
 
 	/**
@@ -40,9 +40,8 @@ public class DiscreteHelpers {
 	 */
 	public static float[] convolute(float[] leftside, float[] rightside) {
 		/*
-		 * we assume there is one overlapping of leftside [-3, -2, -1 , 0] and
-		 * rightside [0, 1, 2] the output length = leftside.length +
-		 * rightside.length - 1.
+		 * we assume there is one overlapping of leftside [-3, -2, -1 , 0] and rightside [0, 1, 2]
+		 * the output length = leftside.length + rightside.length - 1.
 		 */
 		float[] output = new float[leftside.length + rightside.length - 1];
 		for (int i = 0; i < output.length; i++) {
@@ -59,8 +58,7 @@ public class DiscreteHelpers {
 	}
 
 	/**
-	 * Generate a random variable of from the distribution of pdf. urv is a
-	 * uniform random variable.
+	 * Generate a random variable of from the distribution of pdf. urv is a uniform random variable.
 	 * 
 	 * @param urv
 	 * @param pdf
@@ -78,29 +76,28 @@ public class DiscreteHelpers {
 
 	}
 
-//	/**
-//	 * The List version of the previous method.
-//	 * 
-//	 * @param urv
-//	 * @param pdf
-//	 * @return
-//	 */
-//	public static int getProb(float urv, List<Float> pdf) {
-//		int i = 0;
-//		while (i < pdf.size()) {
-//			urv -= pdf.get(i);
-//			if (urv <= 0)
-//				break;
-//			i++;
-//		}
-//		return Math.min(i, pdf.size() - 1);
-//
-//	}
+	// /**
+	// * The List version of the previous method.
+	// *
+	// * @param urv
+	// * @param pdf
+	// * @return
+	// */
+	// public static int getProb(float urv, List<Float> pdf) {
+	// int i = 0;
+	// while (i < pdf.size()) {
+	// urv -= pdf.get(i);
+	// if (urv <= 0)
+	// break;
+	// i++;
+	// }
+	// return Math.min(i, pdf.size() - 1);
+	//
+	// }
 
 	/**
-	 * Bilinear Interpolation of a matrix of m x n dimension to rlength x
-	 * glength dimension. where rlength is an integral multiple of m and glength
-	 * is an integral multiple of n.
+	 * Bilinear Interpolation of a matrix of m x n dimension to rlength x glength dimension. where
+	 * rlength is an integral multiple of m and glength is an integral multiple of n.
 	 * 
 	 * @param vFTerm
 	 * @param rlength
@@ -166,12 +163,13 @@ public class DiscreteHelpers {
 		for (int j = 0; j < glength; j++) {
 			for (int i = 0; i < vFTerm.length - 1; i++) {
 				for (int k = 1; k < xmultiple; k++) {
-					if (i < vFTerm.length-2)
-					newMatrix[i * xmultiple + k][j] = (float) (xmultiple - k) / xmultiple * newMatrix[i * xmultiple][j]
-							+ (float) k / xmultiple * newMatrix[(i + 1) * xmultiple][j];
-					else 
-						newMatrix[i * xmultiple + k][j] = (float) (xmultiple - k) / xmultiple * newMatrix[i * xmultiple][j]
-								+ (float) k / xmultiple * temp[j];
+					if (i < vFTerm.length - 2)
+						newMatrix[i * xmultiple + k][j] = (float) (xmultiple - k) / xmultiple
+								* newMatrix[i * xmultiple][j]
+								+ (float) k / xmultiple * newMatrix[(i + 1) * xmultiple][j];
+					else
+						newMatrix[i * xmultiple + k][j] = (float) (xmultiple - k) / xmultiple
+								* newMatrix[i * xmultiple][j] + (float) k / xmultiple * temp[j];
 				}
 			}
 		}
@@ -195,6 +193,23 @@ public class DiscreteHelpers {
 		}
 		return newMatrix;
 	}
-	
-	
+
+	/**
+	 * Get the column-wise sub-array of a two dimensional array.
+	 * 
+	 * @param input
+	 * @param startCol
+	 *            starting column index
+	 * @param endCol
+	 *            ending column index (non-inclusive)
+	 * @return
+	 */
+	public static float[][] getSubArrayByColumn(float[][] input, int startCol, int endCol) {
+		float[][] output = new float[input.length][endCol - startCol];
+		for (int i = 0; i < input.length; i++) {
+			output[i] = Arrays.copyOfRange(input[i], startCol, endCol);
+		}
+		return output;
+	}
+
 }
