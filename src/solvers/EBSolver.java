@@ -30,7 +30,7 @@ public class EBSolver extends Solver {
 	}
 
 	/**
-	 * TODO: need to check if this part works or not.
+	 * 
 	 */
 	public float findNextStateExpectValue(State state, int actionIndex, int t) {
 		float value = 0;
