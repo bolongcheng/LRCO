@@ -140,10 +140,10 @@ public class FRSolver_sparseLR extends FRSolver {
 	/**
 	 * Computes E [ V_{t+1} (S_{t+1}) | S_t]
 	 * 
-	 * @param state,
-	 * @param i,
+	 * @param state:
+	 * @param i:
 	 *            indexing the i-th feasible action for the state
-	 * @param t,
+	 * @param t:
 	 *            indexing time
 	 * @return
 	 */
@@ -239,11 +239,7 @@ public class FRSolver_sparseLR extends FRSolver {
 			}
 			break;
 		case OPTI_ACTION:
-			// for (int s = 0; s < NumOfStates; s++) {
-			// for (int t = 0; t < horizon; t++) {
-			// output[t][s] = ArrayOfStates[s].getOptAction(t);
-			// }
-			// }
+			System.out.println("sparseLR optimal action not implemented");
 			break;
 		}
 		return output;
