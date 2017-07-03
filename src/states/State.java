@@ -31,10 +31,10 @@ public abstract class State {
 		return feasibleActions;
 	}
 
-	public abstract boolean getTieBreak(int action_index, int maxIndex);
+	public abstract boolean getTieBreak(int actionIndex, int maxIndex);
 
-	public float getCostFunction(int action_index) {
-		return costFunction[action_index];
+	public float getCostFunction(int actionIndex) {
+		return costFunction[actionIndex];
 	}
 
 	public abstract void initialize(Parameter param);
@@ -42,5 +42,6 @@ public abstract class State {
 	public float[] getValueFunction() {
 		return valueFunction;
 	}
+
 
 }

@@ -9,7 +9,10 @@ import utilities.DiscreteHelpers;
 import utilities.Parameter;
 
 public class FRSolver extends Solver {
-
+	/**
+	 * Constructor
+	 * @param param_
+	 */
 	public FRSolver(Parameter param_) {
 		param = param_;
 		numOfStates = param.getRrange().length * param.getGrange().length * param.getDrange().length;
@@ -40,6 +43,7 @@ public class FRSolver extends Solver {
 		}
 		return sum;
 	}
+
 
 	public void populateStates(float[][] terminalValueFunction) {
 		System.out.println("================================");

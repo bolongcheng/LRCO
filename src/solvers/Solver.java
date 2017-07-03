@@ -16,14 +16,14 @@ public abstract class Solver {
 	}
 
 	public void solveBDP() {
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		for (int t = arrayOfStates[0].getValueFunction().length - 2; t >= 0; t--) {
-			for (int s = 0; s < arrayOfStates.length; s++) {
-				findMax(arrayOfStates[s], t);
+			for (State s : arrayOfStates) {
+				findMax(s, t);
 			}
-			long end = System.currentTimeMillis();
-			System.out.println("STEP: " + t + " elpased: " + (end - start) + "ms");
-			start = end;
+//			long end = System.currentTimeMillis();
+//			System.out.println("STEP: " + t + " elpased: " + (end - start) + "ms");
+//			start = end;
 		}
 	}
 
@@ -62,8 +62,8 @@ public abstract class Solver {
 	}
 	
 	public void initializeStates(){
-			for (int s = 0; s < numOfStates; s++) {
-				arrayOfStates[s].initialize(param);
+		for (State s: arrayOfStates){
+			s.initialize(param);
 		}
 	}
 
@@ -79,7 +79,8 @@ public abstract class Solver {
 	 * @return 2D float array of the value function of dimension T x |S|
 	 */
 
-	public float[][] getValueFunction(int choice, int horizon) {
+	public float[][] getValueFunction(int choice) {
+		int horizon = arrayOfStates[0].getValueFunction().length;
 		float[][] output = new float[horizon][numOfStates];
 		switch (choice) {
 		case VALUE_FUNCTION:
@@ -123,7 +124,7 @@ public abstract class Solver {
 		case OPTI_ACTION:
 			for (int s = 0; s < numOfStates; s++) {
 				for (int t = 0; t < VF.length; t++) {
-					arrayOfStates[s].setOptAction((int) VF[s][t], t);
+					arrayOfStates[s].setOptAction((int) VF[t][s], t);
 				}
 			}
 			break;

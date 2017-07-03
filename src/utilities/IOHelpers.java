@@ -18,4 +18,17 @@ public class IOHelpers {
 		}
 		return output;
 	}
+
+	public static float[][] convert1Dto2D(float[] input, int firstDimLength, int secDimLength) {
+		int k = 0;
+		float[][] output = new float[firstDimLength][secDimLength];
+		for (int i = 0; i < firstDimLength; i++){
+			for (int j = 0; j < secDimLength; j++){
+				output[i][j] = input[k];
+				k++;
+			}
+		}
+		return output;
+	}
+
 }

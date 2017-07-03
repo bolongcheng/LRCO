@@ -27,7 +27,7 @@ public class FastIO {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		System.out.println(fileName + " written correctly.");
 	}
 
 	public static float[][] read2DFloatArray(String fileName, int row, int col) {
@@ -63,7 +63,7 @@ public class FastIO {
 		} catch (FileNotFoundException e1) {
 			e1.printStackTrace();
 		}
-
+		System.out.println(fileName + " read correctly.");
 		return output;
 	}
 
