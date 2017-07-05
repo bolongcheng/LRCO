@@ -17,8 +17,13 @@ public class EB4DSolver extends EBSolver {
 		arrayOfStates = new EBState[numOfStates];
 	}
 
+	//TODO: need to check if this part works or not.
 	/**
-	 * TODO: need to check if this part works or not.
+	 * Compute E[V(S_{t+1}) | S_t, x_t]
+	 * @param state       State object for S_t
+	 * @param actionIndex index for x_t
+	 * @param t           iteration t
+	 * @return 
 	 */
 	public float findNextStateExpectValue(State state, int actionIndex, int t) {
 		float value = 0;
@@ -26,26 +31,26 @@ public class EB4DSolver extends EBSolver {
 		// intra-hour transition, PD fixed, PE changes
 		int PEPDLength = param.getPErange().length * param.getPDrange().length;
 		int GPEPDLength = param.getGrange().length * PEPDLength;
-		EBState[] nextstates;
+		EBState[] nextStates;
 		float[] prob;
 		if (t == Parameter.NO_FIVE_MIN_PER_HR * 24 - 1) {
-			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length];
-			prob = new float[nextstates.length];
-			for (int rg = 0; rg < nextstates.length; rg++) {
-				nextstates[rg] = (EBState) arrayOfStates[((EBState) state)
+			nextStates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length];
+			prob = new float[nextStates.length];
+			for (int rg = 0; rg < nextStates.length; rg++) {
+				nextStates[rg] = (EBState) arrayOfStates[((EBState) state)
 						.getRGnextStates(actionIndex)[rg][EBState.R_INDEX] * GPEPDLength
 						+ ((EBState) state).getRGnextStates(actionIndex)[rg][EBState.G_INDEX] * PEPDLength
 						+ ((EBState) state).getPE() * param.getPDrange().length + ((EBState4D) state).getPD()];
 				prob[rg] = ((EBState) state).getRGnextProbs(actionIndex)[rg];
 			}
 		} else if ((t + 1) % Parameter.NO_FIVE_MIN_PER_HR != 0) {
-			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length * param.getPErange().length];
-			prob = new float[nextstates.length];
+			nextStates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length * param.getPErange().length];
+			prob = new float[nextStates.length];
 			i = 0;
 			for (int pe = 0; pe < param.getPErange().length; pe++) {
 				if (param.getFmProb()[((EBState4D) state).getPD() * param.getPErange().length + pe][t + 1] > 0.000001) {
 					for (int rg = 0; rg < ((EBState) state).getRGnextProbs(actionIndex).length; rg++) {
-						nextstates[i] = (EBState) arrayOfStates[((EBState) state)
+						nextStates[i] = (EBState) arrayOfStates[((EBState) state)
 								.getRGnextStates(actionIndex)[rg][EBState.R_INDEX] * GPEPDLength
 								+ ((EBState) state).getRGnextStates(actionIndex)[rg][EBState.G_INDEX] * PEPDLength
 								+ pe * param.getPDrange().length + ((EBState4D) state).getPD()];
@@ -55,20 +60,20 @@ public class EB4DSolver extends EBSolver {
 				}
 			}
 		} else {
-			nextstates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length * PEPDLength];
-			EBState[] nextstatesAlt = new EBState[nextstates.length];
-			prob = new float[nextstates.length];
+			nextStates = new EBState[((EBState) state).getRGnextProbs(actionIndex).length * PEPDLength];
+			EBState[] nextStatesAlt = new EBState[nextStates.length];
+			prob = new float[nextStates.length];
 			i = 0;
 			for (int pd = 0; pd < param.getPDrange().length; pd++) {
 				for (int pe = 0; pe < param.getPErange().length; pe++) {
 					if (param.getPriceProb()[pd * param.getPErange().length + pe][t / Parameter.NO_FIVE_MIN_PER_HR
 							+ 1] > 0.000001) {
 						for (int rg = 0; rg < ((EBState) state).getRGnextProbs(actionIndex).length; rg++) {
-							nextstatesAlt[i] = (EBState4D) arrayOfStates[((EBState) state)
+							nextStatesAlt[i] = (EBState4D) arrayOfStates[((EBState) state)
 									.getRGnextStates(actionIndex)[rg][EBState.R_INDEX] * GPEPDLength
 									+ ((EBState) state).getRGnextStates(actionIndex)[rg][EBState.G_INDEX] * PEPDLength
 									+ pd * param.getPErange().length + pe];
-							nextstates[i] = (EBState4D) arrayOfStates[((EBState) state)
+							nextStates[i] = (EBState4D) arrayOfStates[((EBState) state)
 									.getRGnextStates(actionIndex)[rg][EBState.R_INDEX] * GPEPDLength
 									+ pd * param.getPErange().length + pe];
 
@@ -79,16 +84,16 @@ public class EB4DSolver extends EBSolver {
 					}
 				}
 			}
-			for (i = 0; i < nextstatesAlt.length && nextstatesAlt[i] != null; i++) {
-				value += prob[i] * param.getGrange()[nextstatesAlt[i].getG()]
-						* (param.getGrange()[nextstatesAlt[i].getG()] >= 0.4 ? 1 : 0);
+			for (i = 0; i < nextStatesAlt.length && nextStatesAlt[i] != null; i++) {
+				value += prob[i] * param.getGrange()[nextStatesAlt[i].getG()]
+						* (param.getGrange()[nextStatesAlt[i].getG()] >= 0.4 ? 1 : 0);
 			}
 			value *= param.getK() * param.getPDrange()[((EBState4D) state).getPD()];
 
 		}
 
-		for (i = 0; i < nextstates.length && nextstates[i] != null; i++) {
-			value += prob[i] * nextstates[i].getValueFunction(t + 1);
+		for (i = 0; i < nextStates.length && nextStates[i] != null; i++) {
+			value += prob[i] * nextStates[i].getValueFunction(t + 1);
 		}
 
 		return value;

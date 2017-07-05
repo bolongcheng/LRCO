@@ -25,7 +25,7 @@ public class FRSolver_sparseLR extends FRSolver {
 	private MatlabProxy proxy;
 	private MatlabTypeConverter processor;
 	private VFApprox[] vfApprox;
-	private double[][] sampleStatesCoord;
+	private double[][] sampleStatesCoordinates;
 	private double[][] sampleVF; // value function computed for sampled states
 	private FRState[] sampledStates;
 
@@ -55,12 +55,11 @@ public class FRSolver_sparseLR extends FRSolver {
 			proxy.eval("sample_states = " + random_states_input); // find sample
 			processor = new MatlabTypeConverter(proxy);
 			MatlabNumericArray sample_states = processor.getNumericArray("sample_states");
-			double[][] java_sample_states = sample_states.getRealArray2D();
-			sampleStatesCoord = java_sample_states;
-			sampledStates = new FRState[sampleStatesCoord.length];
-			for (int i = 0; i < sampleStatesCoord.length; i++) {
-				int RIdx = (int) sampleStatesCoord[i][0];
-				int DGIdx = (int) sampleStatesCoord[i][1];
+			sampleStatesCoordinates = sample_states.getRealArray2D();
+			sampledStates = new FRState[sampleStatesCoordinates.length];
+			for (int i = 0; i < sampleStatesCoordinates.length; i++) {
+				int RIdx = (int) sampleStatesCoordinates[i][0];
+				int DGIdx = (int) sampleStatesCoordinates[i][1];
 				sampledStates[i] = (FRState) arrayOfStates[RIdx * DGLength + DGIdx];
 				sampledStates[i].initialize(param);
 			}
@@ -68,8 +67,8 @@ public class FRSolver_sparseLR extends FRSolver {
 			System.out.println("Error: random_states.m initialization.");
 			e.printStackTrace();
 		}
-		System.out.println("Sample size: " + sampleStatesCoord.length);
-		sampleVF = new double[sampleStatesCoord.length][1];
+		System.out.println("Sample size: " + sampleStatesCoordinates.length);
+		sampleVF = new double[sampleStatesCoordinates.length][1];
 		vfApprox[Parameter.NO_TWO_SEC_PER_FIVE_MIN] = new VFApprox(param);
 	}
 
@@ -155,7 +154,7 @@ public class FRSolver_sparseLR extends FRSolver {
 		float sum = 0;
 		int baseIndex = Rnext * (param.getDrange().length * param.getGrange().length) + Gnext;
 		for (int j = 0; j < Dnext.length; j++) {
-			float Vnext = (float) vfApprox[t + 1].getVApprox(Rnext, Gnext, Dnext[j]);
+			float Vnext = vfApprox[t + 1].getVApprox(Rnext, Gnext, Dnext[j]);
 			if (t + 1 == Parameter.NO_TWO_SEC_PER_FIVE_MIN)
 				Vnext = arrayOfStates[baseIndex + Dnext[j] * param.getGrange().length].getValueFunction(t + 1);
 			sum += ProbNext[j] * Vnext;
@@ -231,7 +230,7 @@ public class FRSolver_sparseLR extends FRSolver {
 				for (int d = 0; d < param.getDrange().length; d++) {
 					for (int g = 0; g < param.getGrange().length; g++) {
 						for (int t = 0; t < horizon; t++) {
-							output[t][s] = (float) vfApprox[t].getVApprox(r, g, d);
+							output[t][s] = vfApprox[t].getVApprox(r, g, d);
 							s++;
 						}
 					}

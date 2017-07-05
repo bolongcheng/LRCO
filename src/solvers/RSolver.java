@@ -23,7 +23,7 @@ public class RSolver extends Solver {
 			return nextState.getValueFunction(t + 1);
 		} else {
 			for (int i = 0; i < param.getPErange().length; i++) {
-				if (param.getFmProb()[i][t + 1] > 0.000001) {
+				if (param.getFmProb()[i][t + 1] > Parameter.EPSILON) {
 					RState nextState = (RState) arrayOfStates[Rnext * param.getPErange().length + i];
 					cost += param.getFmProb()[i][t + 1] * nextState.getValueFunction(t + 1);
 				}
