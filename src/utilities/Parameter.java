@@ -20,6 +20,7 @@ import java.io.FileReader;
  */
 public class Parameter {
 	// private final int NoTwoSecPerMin = 150;
+	public static float EPSILON = (float) 0.00001;
 	public static final int NO_TWO_SEC_PER_FIVE_MIN = 30; // Ten Second
 	public static final int NO_FIVE_MIN_PER_HR = 12;
 	public static final int BETA_C = 0; // charging capacity

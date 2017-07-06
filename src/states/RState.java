@@ -58,9 +58,7 @@ public class RState extends State {
 	}
 
 	public boolean getTieBreak(int actionIndex, int maxIndex) {
-		if (Rnext[actionIndex] > Rnext[maxIndex])
-			return true;
-		return false;
+		return Rnext[actionIndex] > Rnext[maxIndex];
 	}
 
 	public void initialize(Parameter param) {

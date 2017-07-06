@@ -12,25 +12,25 @@ import utilities.IOHelpers;
 import utilities.Parameter;
 
 public class Test {
-	public static void main(String[] args) {
-		// String dirName = "";
-		String dirName = "/Users/mac/Dropbox/JavaWorkspace/LRCO";
-		if (args.length != 0)
-			dirName = args[0];
-		int numTest = 0;
-		if (args.length > 1)
-			numTest = Integer.parseInt(args[1]);
-		
-		
-		String outputFolder = dirName + File.separator + "Output" + File.separator;
-		String EBVFDir = outputFolder + "EB4D" + File.separator;
-		Parameter param = new Parameter();
-		param.readStaticParameters(dirName + File.separator + "Input" + File.separator + "static_param.csv");
-		param.readStateSpace(dirName + File.separator + "Input" + File.separator + "eb_test" + numTest + ".csv");
-		EB4DSolver EBSolve = new EB4DSolver(param);
-		float [][] VF = FastIO.read2DFloatArray(EBVFDir + "EBVF_Q0.dat", Parameter.NO_FIVE_MIN_PER_HR*24+1, EBSolve.getNumOfStates());
-		CSVIO.write2DFloatArray(EBVFDir + "EBVF_Q0.csv", VF);
-		
+    public static void main(String[] args) {
+        // String dirName = "";
+        String dirName = "/Users/mac/Dropbox/JavaWorkspace/LRCO";
+        if (args.length != 0)
+            dirName = args[0];
+        int numTest = 0;
+        if (args.length > 1)
+            numTest = Integer.parseInt(args[1]);
+
+
+        String outputFolder = dirName + File.separator + "Output" + File.separator;
+        String EBVFDir = outputFolder + "EB4D" + File.separator;
+        Parameter param = new Parameter();
+        param.readStaticParameters(dirName + File.separator + "Input" + File.separator + "static_param.csv");
+        param.readStateSpace(dirName + File.separator + "Input" + File.separator + "eb_test" + numTest + ".csv");
+        EB4DSolver EBSolve = new EB4DSolver(param);
+        float[][] VF = FastIO.read2DFloatArray(EBVFDir + "EBVF_Q0.dat", Parameter.NO_FIVE_MIN_PER_HR * 24 + 1, EBSolve.getNumOfStates());
+        CSVIO.write2DFloatArray(EBVFDir + "EBVF_Q0.csv", VF);
+
 //		Parameter param = new Parameter();
 //		param.readStaticParameters(dirName + File.separator + "Input" + File.separator + "static_param.csv");
 //		param.readStateSpace(dirName + File.separator + "Input" + File.separator + "eb_test" + numTest + ".csv");
@@ -66,5 +66,5 @@ public class Test {
 //		CSVIO.write2DFloatArray(dirName + File.separator + "Output" + File.separator + "EBSim.csv",
 //				IOHelpers.convert3Dto2D(sim.getPath()));
 
-	}
+    }
 }
