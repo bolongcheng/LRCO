@@ -17,9 +17,9 @@ This code requires [matlabcontrol](https://github.com/jakaplan/matlabcontrol/rel
 ## solvers
 
 ## states
-`State.java` is the abstract class for state variables, which includes getters and setters for variables such as `valueFunction`, `optActions`, `costFunctions` and `feasibleActions`. There are three base classes derived from the abstract class: `RState.java`, `EBState.java` and `FRState.java`. The base classes also describes the transition functions (and probabilities) for each of the state variable.
+[`State.java`](../blob/master/src/states/State.java) is the abstract class for state variables, which includes getters and setters for variables such as `valueFunction`, `optActions`, `costFunctions` and `feasibleActions`. There are three base classes derived from the abstract class: `RState.java`, `EBState.java` and `FRState.java`. The base classes also describes the transition functions (and probabilities) for each of the state variable.
 
- * `RState.java` is the base class that describes the `resource` state, which includes two state variables (R, P^E).
+ * `RState.java` is the base class that describes the *resource* state, which includes two state variables (R, P^E).
  * `EBState.java` is the base class that describes the *energy basepoint* state, which includes three state variables (R, G, P^E). The `EBState4D.java` is a subclass of `EBState.java`, and has four state variables (R, G, P^E, P^D).
  * `FRState.java` is the base class that describes the *frequency regulation* state variable, which includes three state variables (R, G, D).
 
@@ -29,7 +29,12 @@ The cost functions of the states are implemented in `RObjFun.java`, `EBObjFun.ja
 ## users
 
 ## utilities
-
+`FastIO.java`
+`CSVIO.java`
+`IOHelpers.java`
+`Parameter.java`
+`VFApprox.java`
+`DiscreteHelpers.java`
 ## MatLab files
 `random_states.m` performs the latin-hypercube sampling for a given matrix and the number desired samples per row/column.
 
