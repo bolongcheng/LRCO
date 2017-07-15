@@ -17,27 +17,38 @@ This code requires [matlabcontrol](https://github.com/jakaplan/matlabcontrol/rel
 ## solvers
 
 ## states
-[`State.java`](../blob/master/src/states/State.java) is the abstract class for state variables, which includes getters and setters for variables such as `valueFunction`, `optActions`, `costFunctions` and `feasibleActions`. There are three base classes derived from the abstract class: `RState.java`, `EBState.java` and `FRState.java`. The base classes also describes the transition functions (and probabilities) for each of the state variable.
+[`State.java`](../master/src/states/State.java) is the abstract class for state variables, which includes getters and setters for variables such as `valueFunction`, `optActions`, `costFunctions` and `feasibleActions`. There are three base classes derived from the abstract class: `RState.java`, `EBState.java` and `FRState.java`. The base classes also describes the transition functions (and probabilities) for each of the state variable.
 
- * `RState.java` is the base class that describes the *resource* state, which includes two state variables (R, P^E).
- * `EBState.java` is the base class that describes the *energy basepoint* state, which includes three state variables (R, G, P^E). The `EBState4D.java` is a subclass of `EBState.java`, and has four state variables (R, G, P^E, P^D).
- * `FRState.java` is the base class that describes the *frequency regulation* state variable, which includes three state variables (R, G, D).
+ * [`RState.java`](../master/src/states/RState.java) is the base class that describes the *resource* state, which includes two state variables (R, P^E).
+ * [`EBState.java`](../master/src/states/EBState.java) is the base class that describes the *energy basepoint* state, which includes three state variables (R, G, P^E). The [`EBState4D.java`](../master/src/states/EBState4D.java) is a subclass of `EBState.java`, and has four state variables (R, G, P^E, P^D).
+ * [`FRState.java`](../master/src/states/FRState.java) is the base class that describes the *frequency regulation* state variable, which includes three state variables (R, G, D).
 
-The cost functions of the states are implemented in `RObjFun.java`, `EBObjFun.java`, and `FRObjFun.java`, respectively.
+The cost functions of the states are implemented in [`RObjFun.java`](../master/src/states/RObjFun.java), [`EBObjFun.java`](../master/src/states/EBObjFun.java), and [`FRObjFun.java`](../master/src/states/FRObjFun.java), respectively.
 
 
 ## users
 
 ## utilities
-`FastIO.java`
-`CSVIO.java`
-`IOHelpers.java`
-`Parameter.java`
-`VFApprox.java`
-`DiscreteHelpers.java`
+This package contains programs that mostly facilitate some of the mundane tasks such as input/output, setting parameters, manipulating discrete sets, and some linear algebra computation.
+
+[`CSVIO.java`](../master/src/utilities/CSVIO.java) handles the read/write of 2D arrays from/to `.csv` files. This is the most basic way of storing value functions and other data (e.g. prices), but it becomes very inefficient when the value function is large.
+
+[`FastIO.java`](../master/src/utilities/FastIO.java) handles the read/write of 2D float arrays in binary format. This class uses the `java.nio` API to open channels and allocate `ByteBuffer` the size of a single row of the data type. This implementation is about 3-5 times faster than the `CSVIO` implementation on average. (Note: I have used `.dat` as the suffix of the binary files. Remember to follow the Java convention for space allocation, e.g., 4 bytes for single-precision float.)
+
+[`DiscreteHelpers.java`](../master/src/utilities/DiscreteHelpers.java) contains static methods that help facilitate operations on an array of discrete values, such as convolution, finding the index of an element, interpolation, etc.
+
+[`IOHelpers.java`](../master/src/utilities/IOHelpers.java) has static methods that convert n-D arrays into different dimensions.
+
+[`Parameter.java`](../master/src/utilities/Parameter.java) is the class for handling all of the static parameters and the state space parameters of the problems. The state space parameters define the size of each state variable (discretization levels). We inlcude samples of the static parameter file and state space parameter file.
+
+[`VFApprox.java`](../master/src/utilities/VFApprox.java) is for storing the sparse low rank approximations for a single time step. Each rank-1 approximation is stored as x-vectors, y-vectors and the shift values for all sub-matrices. This classes can output the x-vectors, y-vectors as 1-D arrays. It can also compute the approximated value of a state given the absolute x, y location.
+
+
 ## MatLab files
-`random_states.m` performs the latin-hypercube sampling for a given matrix and the number desired samples per row/column.
+[`random_states.m`](../master/random_states.m) performs the latin-hypercube sampling for a given matrix and the number desired samples per row/column. The following line can be commented out if the user does not have `CPLEX` installed on the machine. 
+```
+addpath('/opt/ilog/cplex/matlab');
+```
+[`svd_approx_partition.m`](../master/svd_approx_partition.m) computes the sparse low rank approximation with an L1 objective function. This code requires `CPLEX` in order to the solve a linear program. 
 
-`svd_approx_partition.m` computes the sparse low rank approximation with an L1 objective function.
-
-`svd_approx_partitionLS.m` computes the sparse low rank approximation with an L2 objective function.
+[`svd_approx_partitionLS.m`](../master/svd_approx_partitionLS.m) computes the sparse low rank approximation with an L2 objective function. 
