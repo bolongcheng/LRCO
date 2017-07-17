@@ -1,10 +1,10 @@
 # LRCO
 This project is created to implement the sparse low rank VFA from the paper, [Low-Rank Value Function Approximation for Co-optimization of Battery Storage](http://ieeexplore.ieee.org/document/7950964/). It also includes most of the implementation of the paper, [Co-optimizing Battery Storage for the Frequency Regulation and Energy Arbitrage Using Multi-Scale Dynamic Programming](http://ieeexplore.ieee.org/document/7558191/). The project is a java project with the following packages:
-* **simulators**
-* **solvers**
-* **states**
-* **users**
-* **utilites**
+* [**simulators**](#simulators)
+* [**solvers**](#solvers)
+* [**states**](#states)
+* [**users**](#users)
+* [**utilites**](#utilities)
 
 This code requires [matlabcontrol](https://github.com/jakaplan/matlabcontrol/releases), a Java API that allows for calling MATLAB from Java. This can be done by importing the `.jar` file to the Java project. In addition, this project also includes three Matlab routines:
 
@@ -13,11 +13,19 @@ This code requires [matlabcontrol](https://github.com/jakaplan/matlabcontrol/rel
 * **svd_approx_partitionLS.m**
 
 ## simulators
+[`Simulator.java`](../master/src/simulators/Simulator.java) is the abstract class for simulate the Markov decision process.  
+[`EBSimulator.java`](../master/src/simulators/EBSimulator.java)
+[`FRSimulator.java`](../master/src/simulators/FRSimulator.java)
 
 ## solvers
 
+[`Solver.java`](../master/src/solvers/Solver.java) is the abstract class for solving the backward dynamic program. The base classes need to implement `findNextStateExpectValue` which computes the expected value function of the next state, for a state and a given decision. In addition, base calsses also need to implement  `populateStates(float[][] terminalValueFunction)`, which creates the state space with the given terminal value function conditions.
+
+[`EBSolver.java`](../master/src/solvers/EBSolver.java)
+[`FRSolver.java`](../master/src/solvers/FRSolver.java)
+
 ## states
-[`State.java`](../master/src/states/State.java) is the abstract class for state variables, which includes getters and setters for variables such as `valueFunction`, `optActions`, `costFunctions` and `feasibleActions`. There are three base classes derived from the abstract class: `RState.java`, `EBState.java` and `FRState.java`. The base classes also describes the transition functions (and probabilities) for each of the state variable.
+[`State.java`](../master/src/states/State.java) is the abstract class for state variables, which includes getters and setters for variables such as `valueFunction`, `optActions`, `costFunctions` and `feasibleActions`. There are three base classes derived from the abstract class: `RState.java`, `EBState.java` and `FRState.java`. The base classes also describes the transition functions (and probabilities) for each of the state variable. The base classes need to implement the methods `setFeasibleActions` which creates the feasible decision space for each state and `getTieBreak` that helps break the tie in case two states have the same value function.
 
  * [`RState.java`](../master/src/states/RState.java) is the base class that describes the *resource* state, which includes two state variables (R, P^E).
  * [`EBState.java`](../master/src/states/EBState.java) is the base class that describes the *energy basepoint* state, which includes three state variables (R, G, P^E). The [`EBState4D.java`](../master/src/states/EBState4D.java) is a subclass of `EBState.java`, and has four state variables (R, G, P^E, P^D).
@@ -46,7 +54,7 @@ This package contains programs that mostly facilitate some of the mundane tasks 
 
 ## MatLab files
 [`random_states.m`](../master/random_states.m) performs the latin-hypercube sampling for a given matrix and the number desired samples per row/column. The following line can be commented out if the user does not have `CPLEX` installed on the machine. 
-```
+```matlab
 addpath('/opt/ilog/cplex/matlab');
 ```
 [`svd_approx_partition.m`](../master/svd_approx_partition.m) computes the sparse low rank approximation with an L1 objective function. This code requires `CPLEX` in order to the solve a linear program. 
