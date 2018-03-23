@@ -1,8 +1,8 @@
 # LRCO
 This project is created to implement the sparse low rank VFA from the paper, [Low-Rank Value Function Approximation for Co-optimization of Battery Storage](http://ieeexplore.ieee.org/document/7950964/). It also includes most of the implementation of the paper, [Co-optimizing Battery Storage for the Frequency Regulation and Energy Arbitrage Using Multi-Scale Dynamic Programming](http://ieeexplore.ieee.org/document/7558191/). The project is a java project with the following packages:
-* [**simulators**](#simulators)
-* [**solvers**](#solvers)
 * [**states**](#states)
+* [**solvers**](#solvers)
+* [**simulators**](#simulators)
 * [**users**](#users)
 * [**utilites**](#utilities)
 
@@ -11,18 +11,6 @@ This code requires [matlabcontrol](https://github.com/jakaplan/matlabcontrol/rel
 * **random_states.m**
 * **svd_approx_partition.m**
 * **svd_approx_partitionLS.m**
-
-## simulators
-[`Simulator.java`](../master/src/simulators/Simulator.java) is the abstract class for simulate the Markov decision process.  
-[`EBSimulator.java`](../master/src/simulators/EBSimulator.java)
-[`FRSimulator.java`](../master/src/simulators/FRSimulator.java)
-
-## solvers
-
-[`Solver.java`](../master/src/solvers/Solver.java) is the abstract class for solving the backward dynamic program. The base classes need to implement `findNextStateExpectValue` which computes the expected value function of the next state, for a state and a given decision. In addition, base calsses also need to implement  `populateStates(float[][] terminalValueFunction)`, which creates the state space with the given terminal value function conditions.
-
-[`EBSolver.java`](../master/src/solvers/EBSolver.java)
-[`FRSolver.java`](../master/src/solvers/FRSolver.java)
 
 ## states
 [`State.java`](../master/src/states/State.java) is the abstract class for state variables, which includes getters and setters for variables such as `valueFunction`, `optActions`, `costFunctions` and `feasibleActions`. There are three base classes derived from the abstract class: `RState.java`, `EBState.java` and `FRState.java`. The base classes also describes the transition functions (and probabilities) for each of the state variable. The base classes need to implement the methods `setFeasibleActions` which creates the feasible decision space for each state and `getTieBreak` that helps break the tie in case two states have the same value function.
@@ -33,8 +21,21 @@ This code requires [matlabcontrol](https://github.com/jakaplan/matlabcontrol/rel
 
 The cost functions of the states are implemented in [`RObjFun.java`](../master/src/states/RObjFun.java), [`EBObjFun.java`](../master/src/states/EBObjFun.java), and [`FRObjFun.java`](../master/src/states/FRObjFun.java), respectively.
 
+## solvers
+
+[`Solver.java`](../master/src/solvers/Solver.java) is the abstract class for solving the backward dynamic program. The base classes need to implement `findNextStateExpectValue` which computes the expected value function of the next state, for a state and a given decision. In addition, base calsses also need to implement  `populateStates(float[][] terminalValueFunction)`, which creates the state space with the given terminal value function conditions.
+
+[`EBSolver.java`](../master/src/solvers/EBSolver.java) is the base class that solves the MDP for *energy basepoint* sub-problem using backward dynamic programming.
+
+[`FRSolver.java`](../master/src/solvers/FRSolver.java) is the base class that solves the MDP for the *frequency regulation* sub-problem using backward dynamic programming. 
+
+## simulators
+[`Simulator.java`](../master/src/simulators/Simulator.java) is the abstract class for simulate the Markov decision process.  
+[`EBSimulator.java`](../master/src/simulators/EBSimulator.java) simulates the *energy basepoint* MDP, which is in 5-minute increment for the horizon of 24 hours.
+[`FRSimulator.java`](../master/src/simulators/FRSimulator.java) simulates the *frequency regulation* MDP, which is in 4-second increment for the horizon of 5 minutes.
 
 ## users
+This includes the main files used to run the simulators and the solvers.
 
 ## utilities
 This package contains programs that mostly facilitate some of the mundane tasks such as input/output, setting parameters, manipulating discrete sets, and some linear algebra computation.
